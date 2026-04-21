@@ -121,17 +121,15 @@
       </div>
       <div class="login-body">
         <div class="field">
-          <label>Thành viên</label>
-          <select id="loginUserID" style="width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 14px;outline:none">
-            <option value="">Đang tải danh sách thành viên...</option>
-          </select>
+          <label>UserID</label>
+          <input id="loginUserID" placeholder="Nhập UserID" autocomplete="username" />
         </div>
         <div class="field">
           <label>Mật khẩu</label>
           <input id="loginPassword" type="password" placeholder="Nhập mật khẩu hoặc để trống nếu hệ chưa bật password" autocomplete="current-password" />
         </div>
         <div class="helper">
-          Hệ thống đăng nhập bằng cách chọn tên thành viên từ danh sách đồng bộ từ sheet Users. Nếu backend chưa bật password, có thể để trống mật khẩu.
+          Hệ thống hỗ trợ đăng nhập theo UserID và mật khẩu. Nếu backend chưa bật password, có thể để trống mật khẩu.
         </div>
         <div class="login-actions">
           <button class="btn btn-primary" id="loginBtn" onclick="login()">Đăng nhập</button>
@@ -233,13 +231,13 @@
       <section class="grid-2">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tháng</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng.</div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; bổ sung line trung bình Top 10.</div>
           <div class="chart-wrap"><canvas id="monthComboChart"></canvas></div>
         </div>
 
         <div class="panel chart-card">
-          <h2 class="section-title">Top thành viên theo KM thực tế</h2>
-          <div class="section-sub">Top 10 thành viên có tổng DistanceKM cao nhất.</div>
+          <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
+          <div class="section-sub">Top 10 thành viên theo bộ lọc hiện tại, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
           <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
       </section>
@@ -247,7 +245,7 @@
       <section class="grid-1">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tuần</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0.</div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; bổ sung line trung bình Top 10.</div>
           <div class="chart-wrap md"><canvas id="weekComboChart"></canvas></div>
         </div>
       </section>
@@ -261,8 +259,20 @@
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <button class="btn btn-light" id="tabMonthBtn" onclick="switchDetailTab('month')">Tab tháng (M)</button>
             <button class="btn btn-primary" id="tabWeekBtn" onclick="switchDetailTab('week')">Tab tuần (W)</button>
+            <button class="btn btn-light" id="tabTop10Btn" onclick="switchDetailTab('top10')">Top 10</button>
+            <button class="btn btn-light" id="tabActiveBtn" onclick="switchDetailTab('active')">Tích cực</button>
+            <button class="btn btn-light" id="tabInactiveBtn" onclick="switchDetailTab('inactive')">Không tích cực</button>
+            <button class="btn btn-light" id="tabNoTrainBtn" onclick="switchDetailTab('no_train')">Không tập</button>
+            <button class="btn btn-light" id="tabRestBtn" onclick="switchDetailTab('rest')">Dưỡng sức</button>
             <div class="pill" id="statusPill">Sẵn sàng</div>
           </div>
+        </div>
+
+        <div class="quick-stats" style="margin-bottom:12px;">
+          <div class="quick-chip" id="detailTotalMembers">Tổng thành viên: 0</div>
+          <div class="quick-chip" id="detailTotalReg">Tổng KM đăng ký: 0</div>
+          <div class="quick-chip" id="detailTotalDistance">Tổng KM thực tế: 0</div>
+          <div class="quick-chip" id="detailTotalCompletion">Tỷ lệ hoàn thành: 0%</div>
         </div>
 
         <div class="table-wrap">
@@ -284,7 +294,7 @@
             <tbody id="detailBody"></tbody>
           </table>
         </div>
-        <div class="footer-note">Bản ổn định • Thống Nhất CR</div>
+        <div class="footer-note">Bản final • Thống Nhất CR</div>
       </section>
     </main>
   </section>
@@ -374,36 +384,6 @@
       return await res.json();
     }
 
-    async function loadLoginUsers(){
-      try{
-        const data = await fetchJson({ action:'loginusers' });
-        if (!data.ok) throw new Error(data.error || 'Không tải được danh sách thành viên');
-
-        const select = document.getElementById('loginUserID');
-        select.innerHTML = '';
-
-        const first = document.createElement('option');
-        first.value = '';
-        first.textContent = 'Chọn thành viên';
-        select.appendChild(first);
-
-        (data.users || []).forEach(u => {
-          const opt = document.createElement('option');
-          opt.value = u.UserID || '';
-          opt.textContent = u.FullName ? `${u.FullName} (${u.UserID})` : (u.UserID || '');
-          select.appendChild(opt);
-        });
-      }catch(err){
-        console.error('LOAD LOGIN USERS ERROR:', err);
-        const select = document.getElementById('loginUserID');
-        if (select){
-          select.innerHTML = '<option value="">Không tải được danh sách thành viên</option>';
-        }
-        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.\n\nChi tiết lỗi:\n' + (err.message || String(err)));
-      }
-    }
-
-
     function updateUxMeta(){
       const session = localStorage.getItem('tncr_session');
       const y = document.getElementById('yearFilter')?.value || 'Tất cả năm';
@@ -425,7 +405,7 @@
         const password = document.getElementById('loginPassword').value;
 
         if (!userId){
-          setLoginStatus('Vui lòng chọn thành viên.');
+          setLoginStatus('Thiếu UserID.');
           return;
         }
 
@@ -657,7 +637,7 @@
         detailRowsCache = data.details || [];
         renderSummary(data.summary || {}, detailRowsCache);
         renderMonthComboChart(detailRowsCache);
-        renderMemberChart((data.charts && data.charts.byMember) || []);
+        renderMemberChart(detailRowsCache);
         renderWeekComboChart(detailRowsCache);
         switchDetailTab(currentDetailTab);
         document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(data.totalRows || detailRowsCache.length)} bản ghi phù hợp bộ lọc hiện tại.`;
@@ -670,6 +650,105 @@
         setBanner('Không tải được dữ liệu dashboard: ' + (err.message || String(err)), 'error');
         showToast('Không tải được dữ liệu');
       }
+    }
+
+
+    function parsePaceToMinutes(value){
+      if (value === null || value === undefined) return 0;
+      if (typeof value === 'number') return value;
+      const s = String(value).trim();
+      if (!s) return 0;
+      if (s.indexOf(':') > -1){
+        const parts = s.split(':').map(x => Number(x || 0));
+        if (parts.length >= 2){
+          return +(parts[0] + (parts[1] / 60)).toFixed(2);
+        }
+      }
+      const n = Number(s.replace(',', '.').replace(/[^0-9.\-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function minuteToPaceText(mins){
+      const totalSec = Math.round(Number(mins || 0) * 60);
+      if (!totalSec) return '';
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    function buildMemberAggregates(rows){
+      const map = {};
+      (rows || []).forEach(r => {
+        const key = String(r.UserID || '').trim() || String(r.FullName || '').trim();
+        if (!key) return;
+        if (!map[key]){
+          map[key] = {
+            UserID: r.UserID || '',
+            FullName: r.FullName || '',
+            KMReg: 0,
+            DistanceKM: 0,
+            PaceSum: 0,
+            PaceCount: 0,
+            sessions: 0,
+            activeSessions: 0,
+            noTrainSessions: 0,
+            restSessions: 0
+          };
+        }
+        const kmReg = Number(r.KMReg || 0);
+        const kmActual = Number(r.DistanceKM || 0);
+        const paceMin = Number(r.PaceSeconds || 0) > 0 ? +(Number(r.PaceSeconds || 0) / 60).toFixed(2) : parsePaceToMinutes(r.Pace);
+
+        map[key].KMReg += kmReg;
+        map[key].DistanceKM += kmActual;
+        if (paceMin > 0){
+          map[key].PaceSum += paceMin;
+          map[key].PaceCount += 1;
+        }
+        map[key].sessions += 1;
+        if (kmActual !== 0) map[key].activeSessions += 1;
+        if (kmReg !== 0 && kmActual === 0) map[key].noTrainSessions += 1;
+        if (kmReg === 0) map[key].restSessions += 1;
+      });
+
+      return Object.values(map).map(x => {
+        const ratio = x.KMReg > 0 ? (x.DistanceKM / x.KMReg) : 0;
+        const attendRatio = x.sessions > 0 ? (x.activeSessions / x.sessions) : 0;
+        let type = 'normal';
+        if (x.KMReg === 0 || x.restSessions === x.sessions) type = 'rest';
+        else if (x.DistanceKM === 0 && x.noTrainSessions > 0) type = 'no_train';
+        else if (attendRatio > 0.9) type = 'active';
+        else if (attendRatio < 0.5) type = 'inactive';
+
+        return {
+          UserID: x.UserID,
+          FullName: x.FullName,
+          KMReg: x.KMReg,
+          DistanceKM: x.DistanceKM,
+          CompletionRate: ratio * 100,
+          AttendanceRate: attendRatio * 100,
+          PaceAvg: x.PaceCount > 0 ? +(x.PaceSum / x.PaceCount).toFixed(2) : 0,
+          PaceText: x.PaceCount > 0 ? minuteToPaceText(x.PaceSum / x.PaceCount) : '',
+          type: type
+        };
+      });
+    }
+
+    function getTop10AverageDistance(rows){
+      const members = buildMemberAggregates(rows).sort((a,b)=>b.DistanceKM-a.DistanceKM).slice(0,10);
+      if (!members.length) return 0;
+      return +(members.reduce((sum, x) => sum + Number(x.DistanceKM || 0), 0) / members.length).toFixed(2);
+    }
+
+    function updateDetailTotals(rows){
+      const members = buildMemberAggregates(rows);
+      const totalReg = members.reduce((s,x)=>s+Number(x.KMReg||0),0);
+      const totalDistance = members.reduce((s,x)=>s+Number(x.DistanceKM||0),0);
+      const completion = totalReg > 0 ? (totalDistance / totalReg) * 100 : 0;
+      document.getElementById('detailTotalMembers').textContent = 'Tổng thành viên: ' + formatNumber(members.length);
+      document.getElementById('detailTotalReg').textContent = 'Tổng KM đăng ký: ' + formatNumber(totalReg);
+      document.getElementById('detailTotalDistance').textContent = 'Tổng KM thực tế: ' + formatNumber(totalDistance);
+      document.getElementById('detailTotalCompletion').textContent = 'Tỷ lệ hoàn thành: ' + formatNumber(completion) + '%';
     }
 
     function renderSummary(s, rows){
@@ -689,6 +768,8 @@
 
     function renderMonthComboChart(rows){
       const monthMap = {};
+      const avgTop10 = getTop10AverageDistance(rows);
+
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
         if (!key) return;
@@ -714,6 +795,7 @@
           datasets: [
             { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
             { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+            { type:'line', label:'TB Top 10', data:rowsAgg.map(() => avgTop10), tension:0, borderDash:[6,6], yAxisID:'y' },
             { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
           ]
         },
@@ -729,17 +811,50 @@
     }
 
     function renderMemberChart(rows){
+      const data = buildMemberAggregates(rows)
+        .sort((a,b)=>b.DistanceKM-a.DistanceKM)
+        .slice(0,10);
+
       const ctx = document.getElementById('memberChart');
       if (memberChart) memberChart.destroy();
+
       memberChart = new Chart(ctx, {
-        type:'bar',
-        data:{ labels: rows.map(x => x.label), datasets:[{ label:'KM thực tế', data:rows.map(x => x.DistanceKM), borderRadius:8 }] },
-        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
+        data:{
+          labels: data.map(x => x.FullName || x.UserID),
+          datasets:[
+            {
+              type:'bar',
+              label:'KM thực tế',
+              data:data.map(x => +(x.DistanceKM || 0).toFixed(2)),
+              borderRadius:8,
+              yAxisID:'y'
+            },
+            {
+              type:'line',
+              label:'Pace TB (phút/km)',
+              data:data.map(x => +(x.PaceAvg || 0).toFixed(2)),
+              tension:.35,
+              yAxisID:'y1'
+            }
+          ]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{ legend:{ position:'top' } },
+          scales:{
+            y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
+            y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
+          }
+        }
       });
     }
 
     function renderWeekComboChart(rows){
       const weekMap = {};
+      const avgTop10 = getTop10AverageDistance(rows);
+
       (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
         if (!key) return;
@@ -765,6 +880,7 @@
           datasets: [
             { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
             { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+            { type:'line', label:'TB Top 10', data:rowsAgg.map(() => avgTop10), tension:0, borderDash:[6,6], yAxisID:'y' },
             { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
           ]
         },
@@ -810,20 +926,58 @@
 
     function switchDetailTab(tab){
       currentDetailTab = tab;
-      document.getElementById('tabMonthBtn').className = 'btn ' + (tab === 'month' ? 'btn-primary' : 'btn-light');
-      document.getElementById('tabWeekBtn').className = 'btn ' + (tab === 'week' ? 'btn-primary' : 'btn-light');
+      const tabMap = {
+        month:'tabMonthBtn',
+        week:'tabWeekBtn',
+        top10:'tabTop10Btn',
+        active:'tabActiveBtn',
+        inactive:'tabInactiveBtn',
+        no_train:'tabNoTrainBtn',
+        rest:'tabRestBtn'
+      };
+      Object.values(tabMap).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = 'btn btn-light';
+      });
+      if (tabMap[tab] && document.getElementById(tabMap[tab])) {
+        document.getElementById(tabMap[tab]).className = 'btn btn-primary';
+      }
       renderDetails(detailRowsCache);
     }
 
     function renderDetails(rows){
       const tbody = document.getElementById('detailBody');
       tbody.innerHTML = '';
+      updateDetailTotals(rows || []);
 
-      const filteredRows = (rows || []).filter(r => {
-        const id = String(r.ActivityID || '').toUpperCase();
-        const weekNum = Number(r.WeekNum || 0);
-        return currentDetailTab === 'month' ? id.includes('M') : (id.includes('W') && weekNum !== 0);
-      });
+      const memberAgg = buildMemberAggregates(rows || []);
+      let filteredRows = [];
+      let aggregateMode = false;
+
+      if (currentDetailTab === 'month') {
+        filteredRows = (rows || []).filter(r => String(r.ActivityID || '').toUpperCase().includes('M'));
+      } else if (currentDetailTab === 'week') {
+        filteredRows = (rows || []).filter(r => {
+          const id = String(r.ActivityID || '').toUpperCase();
+          const weekNum = Number(r.WeekNum || 0);
+          return id.includes('W') && weekNum !== 0;
+        });
+      } else if (currentDetailTab === 'top10') {
+        filteredRows = memberAgg.sort((a,b)=>b.DistanceKM-a.DistanceKM).slice(0,10);
+        aggregateMode = true;
+      } else if (currentDetailTab === 'active') {
+        filteredRows = memberAgg.filter(x => x.type === 'active').sort((a,b)=>b.AttendanceRate-a.AttendanceRate);
+        aggregateMode = true;
+      } else if (currentDetailTab === 'inactive') {
+        filteredRows = memberAgg.filter(x => x.type === 'inactive').sort((a,b)=>a.AttendanceRate-b.AttendanceRate);
+        aggregateMode = true;
+      } else if (currentDetailTab === 'no_train') {
+        filteredRows = memberAgg.filter(x => x.type === 'no_train').sort((a,b)=>b.KMReg-a.KMReg);
+        aggregateMode = true;
+      } else if (currentDetailTab === 'rest') {
+        filteredRows = memberAgg.filter(x => x.type === 'rest');
+        aggregateMode = true;
+      }
 
       if (!filteredRows.length){
         tbody.innerHTML = '<tr><td colspan="10" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
@@ -834,27 +988,41 @@
       filteredRows.forEach(r => {
         const kmReg = Number(r.KMReg || 0);
         const kmActual = Number(r.DistanceKM || 0);
-        const completion = kmReg > 0 ? (kmActual / kmReg) * 100 : 0;
+        const completion = aggregateMode ? Number(r.CompletionRate || 0) : (kmReg > 0 ? (kmActual / kmReg) * 100 : 0);
         const reached = kmReg > 0 && kmActual >= kmReg;
         const zero = kmActual === 0;
+        const paceText = aggregateMode ? (r.PaceText || '') : (r.Pace || '');
+        const year = aggregateMode ? '—' : String(r.Year || '');
+        const quarter = aggregateMode ? '—' : String(r.Quarter || '');
+        const month = aggregateMode ? '—' : String(r.MonthNum || '');
+        const week = aggregateMode ? '—' : String(r.WeekNum || '');
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${escapeHtml(r.FullName || '')}</td>
+          <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
           <td class="right">${formatNumber(kmReg)}</td>
           <td class="right">${formatNumber(kmActual)}</td>
           <td class="right">${formatNumber(completion)}%</td>
           <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
-          <td>${escapeHtml(r.Pace || '')}</td>
-          <td class="center">${escapeHtml(String(r.Year || ''))}</td>
-          <td class="center">${escapeHtml(String(r.Quarter || ''))}</td>
-          <td class="center">${escapeHtml(String(r.MonthNum || ''))}</td>
-          <td class="center">${escapeHtml(String(r.WeekNum || ''))}</td>
+          <td>${escapeHtml(paceText)}</td>
+          <td class="center">${escapeHtml(year)}</td>
+          <td class="center">${escapeHtml(quarter)}</td>
+          <td class="center">${escapeHtml(month)}</td>
+          <td class="center">${escapeHtml(week)}</td>
         `;
         tbody.appendChild(tr);
       });
 
-      document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(filteredRows.length)} bản ghi ở tab ${currentDetailTab === 'month' ? 'tháng (M)' : 'tuần (W)'}.`;
+      const tabLabelMap = {
+        month:'tháng (M)',
+        week:'tuần (W)',
+        top10:'top 10',
+        active:'tích cực',
+        inactive:'không tích cực',
+        no_train:'không tập',
+        rest:'dưỡng sức'
+      };
+      document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(filteredRows.length)} dòng ở tab ${tabLabelMap[currentDetailTab] || currentDetailTab}.`;
     }
 
     function exportCSV(){
@@ -944,7 +1112,6 @@
     (async function boot(){
       applySavedTheme();
       bindEvents();
-      await loadLoginUsers();
       const ok = await restoreSession();
       if (!ok){
         document.getElementById('authView').classList.remove('hidden');
@@ -955,3 +1122,4 @@
   </script>
 </body>
 </html>
+
