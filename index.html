@@ -69,7 +69,7 @@
     .filters-header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
     .section-title{margin:0;font-size:16px;font-weight:800}
     .section-sub{margin-top:4px;color:var(--muted);font-size:13px}
-    .filter-grid{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:12px;align-items:end}
+    .filter-grid{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:12px;align-items:end}
     .field2 label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
     .field2 select,.field2 input{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 12px;outline:none}
     .quick-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -121,15 +121,17 @@
       </div>
       <div class="login-body">
         <div class="field">
-          <label>UserID</label>
-          <input id="loginUserID" placeholder="Nhập UserID" autocomplete="username" />
+          <label>Thành viên</label>
+          <select id="loginUserID" style="width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 14px;outline:none">
+            <option value="">Đang tải danh sách thành viên...</option>
+          </select>
         </div>
         <div class="field">
           <label>Mật khẩu</label>
           <input id="loginPassword" type="password" placeholder="Nhập mật khẩu hoặc để trống nếu hệ chưa bật password" autocomplete="current-password" />
         </div>
         <div class="helper">
-          Hệ thống hỗ trợ đăng nhập theo UserID và mật khẩu. Nếu backend chưa bật password, có thể để trống mật khẩu.
+          Hệ thống đăng nhập bằng cách chọn thành viên từ danh sách lấy từ sheet Users. Nếu backend chưa bật password, có thể để trống mật khẩu.
         </div>
         <div class="login-actions">
           <button class="btn btn-primary" id="loginBtn" onclick="login()">Đăng nhập</button>
@@ -174,7 +176,7 @@
           <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
           <div>
             <h1 class="page-title">Thống Nhất CR</h1>
-            <div class="page-subtitle">Hệ thống theo dõi vận động, tổng hợp KPI, thống kê tháng/tuần và quản trị theo phân quyền.</div>
+            <div class="page-subtitle">Hệ thống theo dõi vận động, tổng hợp KPI, thống kê tháng/tuần và tối ưu tải dữ liệu.</div>
           </div>
         </div>
         <div class="top-actions">
@@ -190,7 +192,7 @@
         <div class="filters-header">
           <div>
             <h2 class="section-title">Bộ lọc dữ liệu</h2>
-            <div class="section-sub">Lọc theo năm, quý, tháng, tuần và thành viên. User thường chỉ xem dữ liệu của mình; Admin xem toàn bộ.</div>
+            <div class="section-sub">Lọc theo năm, quý, tháng và tuần. Các quyền truy cập khác vẫn được giữ nguyên theo cấu hình hiện tại.</div>
           </div>
         </div>
 
@@ -199,7 +201,6 @@
           <div class="field2"><label>Quý</label><select id="quarterFilter"></select></div>
           <div class="field2"><label>Tháng</label><select id="monthFilter"></select></div>
           <div class="field2"><label>Tuần</label><select id="weekFilter"></select></div>
-          <div class="field2"><label>Thành viên</label><select id="userFilter"></select></div>
           <div class="field2"><label>Tìm nhanh</label><input id="keywordFilter" type="text" placeholder="Họ tên, kế hoạch, mã hoạt động..." /></div>
         </div>
 
@@ -228,16 +229,40 @@
         <div class="panel kpi"><div class="kpi-label">Không tập / Dưỡng sức</div><div class="kpi-value" id="sumNoTrainRest">0 / 0</div><div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div></div>
       </section>
 
+      
+      <section id="compareSection" class="panel filters" style="padding:14px 18px; margin-top:-6px; margin-bottom:18px;">
+        <div class="filters-header" style="margin-bottom:10px;">
+          <div>
+            <h2 class="section-title">So sánh người dùng trên biểu đồ</h2>
+            <div class="section-sub">Line KM thực tế của tài khoản đăng nhập được làm nổi bật. Có thể chọn thêm tối đa 3 thành viên để so sánh trên biểu đồ tháng/tuần.</div>
+          </div>
+        </div>
+        <div class="filter-grid" style="grid-template-columns:repeat(3,minmax(180px,1fr));">
+          <div class="field2">
+            <label>So sánh 1</label>
+            <select id="compareUser1"></select>
+          </div>
+          <div class="field2">
+            <label>So sánh 2</label>
+            <select id="compareUser2"></select>
+          </div>
+          <div class="field2">
+            <label>So sánh 3</label>
+            <select id="compareUser3"></select>
+          </div>
+        </div>
+      </section>
+
       <section class="grid-2">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tháng</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; bổ sung line trung bình Top 10.</div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; thêm line KM thực tế của user đăng nhập.</div>
           <div class="chart-wrap"><canvas id="monthComboChart"></canvas></div>
         </div>
 
         <div class="panel chart-card">
           <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
-          <div class="section-sub">Top 10 thành viên theo bộ lọc hiện tại, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
+          <div class="section-sub">Top 10 thành viên toàn hệ, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
           <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
       </section>
@@ -245,7 +270,7 @@
       <section class="grid-1">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tuần</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; bổ sung line trung bình Top 10.</div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; thêm line KM thực tế của user đăng nhập.</div>
           <div class="chart-wrap md"><canvas id="weekComboChart"></canvas></div>
         </div>
       </section>
@@ -257,8 +282,8 @@
             <div class="detail-meta" id="detailMeta">Đang tải dữ liệu...</div>
           </div>
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <button class="btn btn-light" id="tabMonthBtn" onclick="switchDetailTab('month')">Tab tháng (M)</button>
-            <button class="btn btn-primary" id="tabWeekBtn" onclick="switchDetailTab('week')">Tab tuần (W)</button>
+            <button class="btn btn-light" id="tabMonthBtn" onclick="switchDetailTab('month')">Thành tích cá nhân</button>
+            <button class="btn btn-primary" id="tabWeekBtn" onclick="switchDetailTab('week')">Danh sách</button>
             <button class="btn btn-light" id="tabTop10Btn" onclick="switchDetailTab('top10')">Top 10</button>
             <button class="btn btn-light" id="tabActiveBtn" onclick="switchDetailTab('active')">Tích cực</button>
             <button class="btn btn-light" id="tabInactiveBtn" onclick="switchDetailTab('inactive')">Không tích cực</button>
@@ -269,7 +294,7 @@
         </div>
 
         <div class="quick-stats" style="margin-bottom:12px;">
-          <div class="quick-chip" id="detailTotalMembers">Tổng thành viên: 0</div>
+          <div class="quick-chip" id="detailTotalMembers">Tổng đối tượng: 0</div>
           <div class="quick-chip" id="detailTotalReg">Tổng KM đăng ký: 0</div>
           <div class="quick-chip" id="detailTotalDistance">Tổng KM thực tế: 0</div>
           <div class="quick-chip" id="detailTotalCompletion">Tỷ lệ hoàn thành: 0%</div>
@@ -285,6 +310,7 @@
                 <th class="right">Tỷ lệ hoàn thành</th>
                 <th class="center">Mức đạt</th>
                 <th>Pace</th>
+                <th class="right">Tỷ lệ tích cực</th>
                 <th class="center">Năm</th>
                 <th class="center">Quý</th>
                 <th class="center">Tháng</th>
@@ -310,16 +336,36 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbwXYWZm0V_O0t5TVQHbE3jHWXB6Mgzsh7b4eluIaICdaWV5aHIaINAw5rZXpLupriQSbg/exec';
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbxjrYEXlO-nf92SswvjTeMQtFsX_S3K3xwTtzmVJ2TV_-zWxfyYjpQfsInW5-10Ur5QaA/exec';
 
     let currentUser = null;
     let monthComboChart = null;
     let memberChart = null;
     let weekComboChart = null;
     let detailRowsCache = [];
+    let detailRowsAllMembersCache = [];
+    let chartRowsCache = [];
+    let compareUsers = ['', '', ''];
+
+    const COMPARE_COLORS = [
+      '#3b82f6', // blue
+      '#10b981', // green
+      '#f59e0b', // amber
+      '#8b5cf6', // purple
+      '#06b6d4'  // cyan
+    ];
+
     let currentDetailTab = 'week';
     let fullFilterData = { years: [], quarters: [], months: [], weeks: [], users: [] };
+    let allUsersDirectory = [];
     let eventsBound = false;
+
+    const apiCache = new Map();
+    const API_CACHE_TTL = 10000; // 10 giây
+    let memberAggMainCache = [];
+    let memberAggAllCache = [];
+    let currentUserPersonalRowsCache = [];
+    let currentUserActiveRateMapCache = {};
 
     function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
     function toggleTheme(){
@@ -379,10 +425,59 @@
       return url.toString();
     }
 
-    async function fetchJson(params){
-      const res = await fetch(apiUrl(params));
-      return await res.json();
+    async function fetchJson(params, useCache = true){
+      const url = apiUrl(params);
+      const now = Date.now();
+
+      if (useCache && apiCache.has(url)) {
+        const cached = apiCache.get(url);
+        if (now - cached.ts < API_CACHE_TTL) {
+          return cached.data;
+        }
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (useCache) {
+        apiCache.set(url, { ts: now, data });
+      }
+      return data;
     }
+
+    async function loadLoginUsers(){
+      try{
+        const data = await fetchJson({ action:'loginusers' });
+        if (!data.ok) throw new Error(data.error || 'Không tải được danh sách thành viên');
+
+        allUsersDirectory = data.users || [];
+
+        const select = document.getElementById('loginUserID');
+        if (!select) return;
+        select.innerHTML = '';
+
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = 'Chọn thành viên';
+        select.appendChild(first);
+
+        (allUsersDirectory || []).forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.UserID || '';
+          opt.textContent = u.FullName ? `${u.FullName} (${u.UserID})` : (u.UserID || '');
+          select.appendChild(opt);
+        });
+      }catch(err){
+        console.error('LOAD LOGIN USERS ERROR:', err);
+        const select = document.getElementById('loginUserID');
+        if (select) select.innerHTML = '<option value="">Không tải được danh sách thành viên</option>';
+        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.
+
+Chi tiết lỗi:
+' + (err.message || String(err)));
+      }
+    }
+
 
     function updateUxMeta(){
       const session = localStorage.getItem('tncr_session');
@@ -393,6 +488,67 @@
       document.getElementById('activeFilterChip').textContent = 'Bộ lọc: ' + [y,q,m,w].join(' • ');
       document.getElementById('sessionChip').textContent = 'Phiên: ' + (session ? 'đang hoạt động' : 'chưa đăng nhập');
       document.getElementById('lastSyncChip').textContent = 'Lần tải gần nhất: ' + new Date().toLocaleString('vi-VN');
+    }
+    function populateCompareSelectors(){
+      const ids = ['compareUser1','compareUser2','compareUser3'];
+      const users = (allUsersDirectory || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
+
+      ids.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const current = compareUsers[idx] || '';
+        el.disabled = false;
+        el.innerHTML = '';
+
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = 'Không chọn';
+        el.appendChild(first);
+
+        users.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.UserID || '';
+          opt.textContent = (u.FullName || u.UserID || '') + (u.UserID ? ` (${u.UserID})` : '');
+          el.appendChild(opt);
+        });
+
+        if ([...el.options].some(o => o.value === current)) el.value = current;
+        el.onchange = function(){
+          compareUsers[idx] = this.value || '';
+          renderMonthComboChart(chartRowsCache);
+          renderWeekComboChart(chartRowsCache);
+        };
+      });
+    }
+
+    function getSelectedCompareUsers(){
+      return (compareUsers || []).filter(Boolean);
+    }
+
+    function buildUserSeriesByMonth(rows, userId){
+      const uid = String(userId || '');
+      const map = {};
+      (rows || []).forEach(r => {
+        if (String(r.UserID || '') !== uid) return;
+        const key = Number(r.MonthNum || 0);
+        if (!key) return;
+        if (!map[key]) map[key] = 0;
+        map[key] += Number(r.DistanceKM || 0);
+      });
+      return map;
+    }
+
+    function buildUserSeriesByWeek(rows, userId){
+      const uid = String(userId || '');
+      const map = {};
+      (rows || []).forEach(r => {
+        if (String(r.UserID || '') !== uid) return;
+        const key = Number(r.WeekNum || 0);
+        if (!key) return;
+        if (!map[key]) map[key] = 0;
+        map[key] += Number(r.DistanceKM || 0);
+      });
+      return map;
     }
 
     async function login(){
@@ -405,7 +561,7 @@
         const password = document.getElementById('loginPassword').value;
 
         if (!userId){
-          setLoginStatus('Thiếu UserID.');
+          setLoginStatus('Vui lòng chọn thành viên.');
           return;
         }
 
@@ -445,6 +601,7 @@
         localStorage.setItem('tncr_session', data.sessionToken);
         currentUser = data.user;
         renderUserInfo();
+        applyRoleUi();
         document.getElementById('authView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
 
@@ -479,6 +636,7 @@
         document.getElementById('authView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
         renderUserInfo();
+        applyRoleUi();
         await initApp();
         return true;
       }catch(err){
@@ -493,6 +651,7 @@
     function logout(){
       localStorage.removeItem('tncr_session');
       currentUser = null;
+
       document.getElementById('authView').classList.remove('hidden');
       document.getElementById('appView').classList.add('hidden');
       setBanner('');
@@ -509,6 +668,7 @@
       try{
         setBanner('Đang khởi tạo dashboard...', 'info');
         await initFilters();
+        applyRoleUi();
         await loadDashboard();
         bindEvents();
         updateUxMeta();
@@ -536,6 +696,44 @@
       });
     }
 
+
+    function isAdminUser(){
+      const role = String((currentUser && currentUser.Role) || '').toLowerCase();
+      return ['admin','superadmin','manager'].includes(role);
+    }
+
+    function applyRoleUi(){
+      const compareSection = document.getElementById('compareSection');
+      if (compareSection){
+        compareSection.style.display = '';
+      }
+
+      const top10Btn = document.getElementById('tabTop10Btn');
+      if (top10Btn){
+        top10Btn.style.display = '';
+      }
+
+      const activeBtn = document.getElementById('tabActiveBtn');
+      if (activeBtn){
+        activeBtn.style.display = '';
+      }
+
+      const inactiveBtn = document.getElementById('tabInactiveBtn');
+      if (inactiveBtn){
+        inactiveBtn.style.display = '';
+      }
+
+      const noTrainBtn = document.getElementById('tabNoTrainBtn');
+      if (noTrainBtn){
+        noTrainBtn.style.display = '';
+      }
+
+      const restBtn = document.getElementById('tabRestBtn');
+      if (restBtn){
+        restBtn.style.display = '';
+      }
+    }
+
     function authParams(){
       return { sessionToken: localStorage.getItem('tncr_session') || '' };
     }
@@ -555,10 +753,7 @@
 
       renderDependentFilters();
 
-      if (currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID){
-        document.getElementById('userFilter').value = currentUser.UserID;
-        document.getElementById('userFilter').disabled = true;
-      }
+      populateCompareSelectors();
       setStatus('Đã tải bộ lọc', 'ok');
     }
 
@@ -601,16 +796,9 @@
       let weeks = [...fullFilterData.weeks].filter(x => Number(x) !== 0);
       fillSelect('weekFilter', weeks.map(x => ({ value:x, label:'Tuần ' + x })), 'Tất cả tuần');
 
-      const users = fullFilterData.users.map(u => ({ value:u.UserID, label:u.Label || (u.UserID + ' - ' + (u.FullName || '')) }));
-      fillSelect('userFilter', users, 'Tất cả thành viên');
-
       if (y) document.getElementById('yearFilter').value = String(y);
       if (q) document.getElementById('quarterFilter').value = String(q);
       if (m) document.getElementById('monthFilter').value = String(m);
-
-      if (currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID){
-        document.getElementById('userFilter').value = currentUser.UserID;
-      }
     }
 
     function currentFilters(){
@@ -621,7 +809,7 @@
         quarter: document.getElementById('quarterFilter').value,
         month: document.getElementById('monthFilter').value,
         week: document.getElementById('weekFilter').value,
-        userId: document.getElementById('userFilter').value,
+        userId: '',
         keyword: document.getElementById('keywordFilter').value.trim()
       };
     }
@@ -631,16 +819,32 @@
         setStatus('Đang tải dữ liệu dashboard...', 'loading');
         setBanner('Đang đồng bộ dữ liệu dashboard...', 'info');
 
-        const data = await fetchJson(currentFilters());
-        if (!data.ok) throw new Error(data.error || 'Không tải được dashboard');
+        const filters = currentFilters();
+        const filtersAllMembers = Object.assign({}, filters, { action: 'dashboardglobal', userId: '' });
+        const chartFilters = Object.assign({}, filters, { action: 'dashboardglobal', month: '', week: '', userId: '' });
 
-        detailRowsCache = data.details || [];
-        renderSummary(data.summary || {}, detailRowsCache);
-        renderMonthComboChart(detailRowsCache);
-        renderMemberChart(detailRowsCache);
-        renderWeekComboChart(detailRowsCache);
+        const [dataMain, dataAllMembers, dataCharts] = await Promise.all([
+          fetchJson(filters, false),
+          fetchJson(filtersAllMembers, false),
+          fetchJson(chartFilters, false)
+        ]);
+
+        if (!dataMain.ok) throw new Error(dataMain.error || 'Không tải được dashboard');
+        if (!dataAllMembers.ok) throw new Error(dataAllMembers.error || 'Không tải được dashboard all-members');
+        if (!dataCharts.ok) throw new Error(dataCharts.error || 'Không tải được dashboard charts');
+
+        detailRowsCache = dataMain.details || [];
+        detailRowsAllMembersCache = dataAllMembers.details || [];
+        chartRowsCache = dataCharts.details || [];
+        rebuildDataCaches();
+
+        renderSummary(dataMain.summary || {}, detailRowsCache);
+        renderMonthComboChart(chartRowsCache);
+        renderMemberChart(detailRowsAllMembersCache);
+        renderWeekComboChart(chartRowsCache);
         switchDetailTab(currentDetailTab);
-        document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(data.totalRows || detailRowsCache.length)} bản ghi phù hợp bộ lọc hiện tại.`;
+
+        document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber((detailRowsCache || []).length)} bản ghi phù hợp bộ lọc hiện tại.`;
         updateUxMeta();
         setStatus('Đã tải dữ liệu thành công', 'ok');
         setBanner('Dữ liệu đã được cập nhật thành công.', 'info');
@@ -692,12 +896,15 @@
             sessions: 0,
             activeSessions: 0,
             noTrainSessions: 0,
-            restSessions: 0
+            restSessions: 0,
+            weekSet: new Set(),
+            activeWeekSet: new Set()
           };
         }
         const kmReg = Number(r.KMReg || 0);
         const kmActual = Number(r.DistanceKM || 0);
         const paceMin = Number(r.PaceSeconds || 0) > 0 ? +(Number(r.PaceSeconds || 0) / 60).toFixed(2) : parsePaceToMinutes(r.Pace);
+        const weekNum = Number(r.WeekNum || 0);
 
         map[key].KMReg += kmReg;
         map[key].DistanceKM += kmActual;
@@ -709,11 +916,17 @@
         if (kmActual !== 0) map[key].activeSessions += 1;
         if (kmReg !== 0 && kmActual === 0) map[key].noTrainSessions += 1;
         if (kmReg === 0) map[key].restSessions += 1;
+        if (weekNum !== 0){
+          map[key].weekSet.add(weekNum);
+          if (kmActual !== 0) map[key].activeWeekSet.add(weekNum);
+        }
       });
 
       return Object.values(map).map(x => {
         const ratio = x.KMReg > 0 ? (x.DistanceKM / x.KMReg) : 0;
         const attendRatio = x.sessions > 0 ? (x.activeSessions / x.sessions) : 0;
+        const activeWeeks = x.activeWeekSet.size;
+        const totalWeeks = x.weekSet.size;
         let type = 'normal';
         if (x.KMReg === 0 || x.restSessions === x.sessions) type = 'rest';
         else if (x.DistanceKM === 0 && x.noTrainSessions > 0) type = 'no_train';
@@ -729,9 +942,39 @@
           AttendanceRate: attendRatio * 100,
           PaceAvg: x.PaceCount > 0 ? +(x.PaceSum / x.PaceCount).toFixed(2) : 0,
           PaceText: x.PaceCount > 0 ? minuteToPaceText(x.PaceSum / x.PaceCount) : '',
+          ActiveWeeks: activeWeeks,
+          TotalWeeks: totalWeeks,
+          ActiveRateText: `${totalWeeks > 0 ? ((activeWeeks / totalWeeks) * 100).toFixed(2) : '0.00'}% (${activeWeeks}/${totalWeeks})`,
           type: type
         };
       });
+    }
+
+
+    function buildCurrentUserSeriesByMonth(rows){
+      const currentId = String((currentUser && currentUser.UserID) || '');
+      const map = {};
+      (rows || []).forEach(r => {
+        if (String(r.UserID || '') !== currentId) return;
+        const key = Number(r.MonthNum || 0);
+        if (!key) return;
+        if (!map[key]) map[key] = 0;
+        map[key] += Number(r.DistanceKM || 0);
+      });
+      return map;
+    }
+
+    function buildCurrentUserSeriesByWeek(rows){
+      const currentId = String((currentUser && currentUser.UserID) || '');
+      const map = {};
+      (rows || []).forEach(r => {
+        if (String(r.UserID || '') !== currentId) return;
+        const key = Number(r.WeekNum || 0);
+        if (!key) return;
+        if (!map[key]) map[key] = 0;
+        map[key] += Number(r.DistanceKM || 0);
+      });
+      return map;
     }
 
     function getTop10AverageDistance(rows){
@@ -741,14 +984,28 @@
     }
 
     function updateDetailTotals(rows){
-      const members = buildMemberAggregates(rows);
+      const members = rows || [];
       const totalReg = members.reduce((s,x)=>s+Number(x.KMReg||0),0);
       const totalDistance = members.reduce((s,x)=>s+Number(x.DistanceKM||0),0);
       const completion = totalReg > 0 ? (totalDistance / totalReg) * 100 : 0;
-      document.getElementById('detailTotalMembers').textContent = 'Tổng thành viên: ' + formatNumber(members.length);
+      document.getElementById('detailTotalMembers').textContent = 'Tổng đối tượng: ' + formatNumber(members.length);
       document.getElementById('detailTotalReg').textContent = 'Tổng KM đăng ký: ' + formatNumber(totalReg);
       document.getElementById('detailTotalDistance').textContent = 'Tổng KM thực tế: ' + formatNumber(totalDistance);
       document.getElementById('detailTotalCompletion').textContent = 'Tỷ lệ hoàn thành: ' + formatNumber(completion) + '%';
+    }
+
+
+    function rebuildDataCaches(){
+      memberAggMainCache = buildMemberAggregates(detailRowsCache || []);
+      memberAggAllCache = buildMemberAggregates(detailRowsAllMembersCache || []);
+      currentUserPersonalRowsCache = (detailRowsCache || [])
+        .filter(r => String(r.UserID || '') === String((currentUser && currentUser.UserID) || ''))
+        .filter(r => Number(r.WeekNum || 0) !== 0);
+
+      currentUserActiveRateMapCache = {};
+      buildMemberAggregates(currentUserPersonalRowsCache).forEach(x => {
+        currentUserActiveRateMapCache[String(x.UserID || '')] = x.ActiveRateText || '0.00% (0/0)';
+      });
     }
 
     function renderSummary(s, rows){
@@ -768,12 +1025,17 @@
 
     function renderMonthComboChart(rows){
       const monthMap = {};
-      const avgTop10 = getTop10AverageDistance(rows);
+      const currentUserId = String((currentUser && currentUser.UserID) || '');
+      const currentUserMap = buildUserSeriesByMonth(rows, currentUserId);
+      const compareIds = getSelectedCompareUsers();
+      const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByMonth(rows, uid) }));
+      const compareLabels = {};
+      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
         if (!key) return;
-        if (!monthMap[key]) monthMap[key] = { label:'T' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0 };
+        if (!monthMap[key]) monthMap[key] = { label:'T' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0, sortNum:key };
         monthMap[key].RegKM += Number(r.KMReg || 0);
         monthMap[key].DistanceKM += Number(r.DistanceKM || 0);
         if (Number(r.PaceSeconds || 0) > 0){
@@ -784,21 +1046,42 @@
 
       const rowsAgg = Object.keys(monthMap).map(k => {
         const item = monthMap[k];
-        return { label:item.label, RegKM:item.RegKM, DistanceKM:item.DistanceKM, PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0, sortNum:Number(k) };
+        return {
+          label:item.label,
+          RegKM:item.RegKM,
+          DistanceKM:item.DistanceKM,
+          UserDistanceKM: Number(currentUserMap[item.sortNum] || 0),
+          PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+          sortNum:Number(k)
+        };
       }).sort((a,b) => a.sortNum - b.sortNum);
+
+      const datasets = [
+        { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+        { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+        { type:'line', label:'KM thực tế của tôi', data:rowsAgg.map(x => x.UserDistanceKM), tension:.35, yAxisID:'y', borderColor:'#dc2626', backgroundColor:'#dc2626', borderWidth:4, pointRadius:4, pointHoverRadius:5 },
+        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
+      ];
+
+      compareMaps.forEach((cm, idx) => {
+        datasets.push({
+          type:'line',
+          label:`So sánh ${idx+1}: ${compareLabels[cm.uid] || cm.uid}`,
+          data: rowsAgg.map(x => Number(cm.map[x.sortNum] || 0)),
+          tension:.35,
+          yAxisID:'y',
+          borderColor: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+          backgroundColor: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+          borderWidth:2,
+          pointRadius:2,
+          pointHoverRadius:3
+        });
+      });
 
       const ctx = document.getElementById('monthComboChart');
       if (monthComboChart) monthComboChart.destroy();
       monthComboChart = new Chart(ctx, {
-        data: {
-          labels: rowsAgg.map(x => x.label),
-          datasets: [
-            { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
-            { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
-            { type:'line', label:'TB Top 10', data:rowsAgg.map(() => avgTop10), tension:0, borderDash:[6,6], yAxisID:'y' },
-            { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
-          ]
-        },
+        data: { labels: rowsAgg.map(x => x.label), datasets },
         options: {
           responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
           plugins:{ legend:{ position:'top' } },
@@ -811,7 +1094,9 @@
     }
 
     function renderMemberChart(rows){
-      const data = buildMemberAggregates(rows)
+      const source = rows === detailRowsCache ? memberAggMainCache : buildMemberAggregates(rows);
+      const data = source
+        .slice()
         .sort((a,b)=>b.DistanceKM-a.DistanceKM)
         .slice(0,10);
 
@@ -853,12 +1138,17 @@
 
     function renderWeekComboChart(rows){
       const weekMap = {};
-      const avgTop10 = getTop10AverageDistance(rows);
+      const currentUserId = String((currentUser && currentUser.UserID) || '');
+      const currentUserMap = buildUserSeriesByWeek(rows, currentUserId);
+      const compareIds = getSelectedCompareUsers();
+      const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByWeek(rows, uid) }));
+      const compareLabels = {};
+      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
         if (!key) return;
-        if (!weekMap[key]) weekMap[key] = { label:'W' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0 };
+        if (!weekMap[key]) weekMap[key] = { label:'W' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0, sortNum:key };
         weekMap[key].RegKM += Number(r.KMReg || 0);
         weekMap[key].DistanceKM += Number(r.DistanceKM || 0);
         if (Number(r.PaceSeconds || 0) > 0){
@@ -869,21 +1159,42 @@
 
       const rowsAgg = Object.keys(weekMap).map(k => {
         const item = weekMap[k];
-        return { label:item.label, RegKM:item.RegKM, DistanceKM:item.DistanceKM, PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0, sortNum:Number(k) };
+        return {
+          label:item.label,
+          RegKM:item.RegKM,
+          DistanceKM:item.DistanceKM,
+          UserDistanceKM: Number(currentUserMap[item.sortNum] || 0),
+          PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+          sortNum:Number(k)
+        };
       }).sort((a,b) => a.sortNum - b.sortNum);
+
+      const datasets = [
+        { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+        { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+        { type:'line', label:'KM thực tế của tôi', data:rowsAgg.map(x => x.UserDistanceKM), tension:.35, yAxisID:'y', borderColor:'#dc2626', backgroundColor:'#dc2626', borderWidth:4, pointRadius:4, pointHoverRadius:5 },
+        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
+      ];
+
+      compareMaps.forEach((cm, idx) => {
+        datasets.push({
+          type:'line',
+          label:`So sánh ${idx+1}: ${compareLabels[cm.uid] || cm.uid}`,
+          data: rowsAgg.map(x => Number(cm.map[x.sortNum] || 0)),
+          tension:.35,
+          yAxisID:'y',
+          borderColor: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+          backgroundColor: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+          borderWidth:2,
+          pointRadius:2,
+          pointHoverRadius:3
+        });
+      });
 
       const ctx = document.getElementById('weekComboChart');
       if (weekComboChart) weekComboChart.destroy();
       weekComboChart = new Chart(ctx, {
-        data: {
-          labels: rowsAgg.map(x => x.label),
-          datasets: [
-            { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
-            { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
-            { type:'line', label:'TB Top 10', data:rowsAgg.map(() => avgTop10), tension:0, borderDash:[6,6], yAxisID:'y' },
-            { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
-          ]
-        },
+        data: { labels: rowsAgg.map(x => x.label), datasets },
         options: {
           responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
           plugins:{ legend:{ position:'top' } },
@@ -948,74 +1259,103 @@
     function renderDetails(rows){
       const tbody = document.getElementById('detailBody');
       tbody.innerHTML = '';
-      updateDetailTotals(rows || []);
 
-      const memberAgg = buildMemberAggregates(rows || []);
+      const mainRows = rows || [];
+      const memberAggMain = memberAggMainCache || [];
+      const memberAggAll = memberAggAllCache || [];
+
       let filteredRows = [];
-      let aggregateMode = false;
+      let isRawList = false;
 
       if (currentDetailTab === 'month') {
-        filteredRows = (rows || []).filter(r => String(r.ActivityID || '').toUpperCase().includes('M'));
+        filteredRows = currentUserPersonalRowsCache || [];
+        isRawList = true;
       } else if (currentDetailTab === 'week') {
-        filteredRows = (rows || []).filter(r => {
-          const id = String(r.ActivityID || '').toUpperCase();
-          const weekNum = Number(r.WeekNum || 0);
-          return id.includes('W') && weekNum !== 0;
-        });
+        filteredRows = memberAggMain.sort((a,b)=>b.DistanceKM-a.DistanceKM);
       } else if (currentDetailTab === 'top10') {
-        filteredRows = memberAgg.sort((a,b)=>b.DistanceKM-a.DistanceKM).slice(0,10);
-        aggregateMode = true;
+        filteredRows = memberAggAll.sort((a,b)=>b.DistanceKM-a.DistanceKM).slice(0,10);
       } else if (currentDetailTab === 'active') {
-        filteredRows = memberAgg.filter(x => x.type === 'active').sort((a,b)=>b.AttendanceRate-a.AttendanceRate);
-        aggregateMode = true;
+        filteredRows = memberAggAll.filter(x => x.type === 'active').sort((a,b)=>b.AttendanceRate-a.AttendanceRate);
       } else if (currentDetailTab === 'inactive') {
-        filteredRows = memberAgg.filter(x => x.type === 'inactive').sort((a,b)=>a.AttendanceRate-b.AttendanceRate);
-        aggregateMode = true;
+        filteredRows = memberAggAll.filter(x => x.type === 'inactive').sort((a,b)=>a.AttendanceRate-b.AttendanceRate);
       } else if (currentDetailTab === 'no_train') {
-        filteredRows = memberAgg.filter(x => x.type === 'no_train').sort((a,b)=>b.KMReg-a.KMReg);
-        aggregateMode = true;
+        filteredRows = memberAggAll.filter(x => x.type === 'no_train').sort((a,b)=>b.KMReg-a.KMReg);
       } else if (currentDetailTab === 'rest') {
-        filteredRows = memberAgg.filter(x => x.type === 'rest');
-        aggregateMode = true;
+        filteredRows = memberAggAll.filter(x => x.type === 'rest');
+      }
+
+      if (currentDetailTab === 'month'){
+        updateDetailTotals(buildMemberAggregates(filteredRows));
+      } else if (isRawList){
+        updateDetailTotals(buildMemberAggregates(filteredRows));
+      } else {
+        updateDetailTotals(filteredRows || []);
       }
 
       if (!filteredRows.length){
-        tbody.innerHTML = '<tr><td colspan="10" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
         document.getElementById('detailMeta').textContent = 'Không có dữ liệu phù hợp ở tab hiện tại.';
         return;
       }
 
-      filteredRows.forEach(r => {
-        const kmReg = Number(r.KMReg || 0);
-        const kmActual = Number(r.DistanceKM || 0);
-        const completion = aggregateMode ? Number(r.CompletionRate || 0) : (kmReg > 0 ? (kmActual / kmReg) * 100 : 0);
-        const reached = kmReg > 0 && kmActual >= kmReg;
-        const zero = kmActual === 0;
-        const paceText = aggregateMode ? (r.PaceText || '') : (r.Pace || '');
-        const year = aggregateMode ? '—' : String(r.Year || '');
-        const quarter = aggregateMode ? '—' : String(r.Quarter || '');
-        const month = aggregateMode ? '—' : String(r.MonthNum || '');
-        const week = aggregateMode ? '—' : String(r.WeekNum || '');
+      if (currentDetailTab === 'month'){
+        const activeMap = currentUserActiveRateMapCache || {};
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
-          <td class="right">${formatNumber(kmReg)}</td>
-          <td class="right">${formatNumber(kmActual)}</td>
-          <td class="right">${formatNumber(completion)}%</td>
-          <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
-          <td>${escapeHtml(paceText)}</td>
-          <td class="center">${escapeHtml(year)}</td>
-          <td class="center">${escapeHtml(quarter)}</td>
-          <td class="center">${escapeHtml(month)}</td>
-          <td class="center">${escapeHtml(week)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+        filteredRows.forEach(r => {
+          const kmReg = Number(r.KMReg || 0);
+          const kmActual = Number(r.DistanceKM || 0);
+          const completion = kmReg > 0 ? (kmActual / kmReg) * 100 : 0;
+          const reached = kmReg > 0 && kmActual >= kmReg;
+          const zero = kmActual === 0;
+          const activeRateText = activeMap[String(r.UserID || '')] || '0.00% (0/0)';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
+            <td class="right">${formatNumber(kmReg)}</td>
+            <td class="right">${formatNumber(kmActual)}</td>
+            <td class="right">${formatNumber(completion)}%</td>
+            <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
+            <td>${escapeHtml(r.Pace || '')}</td>
+            <td class="right">${escapeHtml(activeRateText)}</td>
+            <td class="center">${escapeHtml(String(r.Year || ''))}</td>
+            <td class="center">${escapeHtml(String(r.Quarter || ''))}</td>
+            <td class="center">${escapeHtml(String(r.MonthNum || ''))}</td>
+            <td class="center">${escapeHtml(String(r.WeekNum || ''))}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        filteredRows.forEach(r => {
+          const kmReg = Number(r.KMReg || 0);
+          const kmActual = Number(r.DistanceKM || 0);
+          const completion = Number(r.CompletionRate || 0);
+          const reached = kmReg > 0 && kmActual >= kmReg;
+          const zero = kmActual === 0;
+          const paceText = r.PaceText || '';
+          const activeRateText = r.ActiveRateText || '0.00% (0/0)';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
+            <td class="right">${formatNumber(kmReg)}</td>
+            <td class="right">${formatNumber(kmActual)}</td>
+            <td class="right">${formatNumber(completion)}%</td>
+            <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
+            <td>${escapeHtml(paceText)}</td>
+            <td class="right">${escapeHtml(activeRateText)}</td>
+            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
+            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
+            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
+            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
 
       const tabLabelMap = {
-        month:'tháng (M)',
-        week:'tuần (W)',
+        month:'thành tích cá nhân',
+        week:'danh sách',
         top10:'top 10',
         active:'tích cực',
         inactive:'không tích cực',
@@ -1087,9 +1427,6 @@
       document.getElementById('quarterFilter').value = '';
       document.getElementById('monthFilter').value = '';
       document.getElementById('weekFilter').value = '';
-      if (!(currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID)){
-        document.getElementById('userFilter').value = '';
-      }
       document.getElementById('keywordFilter').value = '';
       renderDependentFilters();
       updateUxMeta();
@@ -1112,6 +1449,7 @@
     (async function boot(){
       applySavedTheme();
       bindEvents();
+      await loadLoginUsers();
       const ok = await restoreSession();
       if (!ok){
         document.getElementById('authView').classList.remove('hidden');
@@ -1122,4 +1460,3 @@
   </script>
 </body>
 </html>
-
