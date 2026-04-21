@@ -262,7 +262,7 @@
 
         <div class="panel chart-card">
           <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
-          <div class="section-sub">Top 10 thành viên toàn hệ, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
+          <div class="section-sub">Top 10 thành viên theo bộ lọc hiện tại, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
           <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
       </section>
@@ -336,7 +336,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbxjrYEXlO-nf92SswvjTeMQtFsX_S3K3xwTtzmVJ2TV_-zWxfyYjpQfsInW5-10Ur5QaA/exec';
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbxtY7xB-GRukY7fsmHhkCd5An5Zga5h4BEpcamfuhLM9hoOpLgJuy80oc1XUoX-M1l_Sw/exec';
 
     let currentUser = null;
     let monthComboChart = null;
@@ -357,7 +357,6 @@
 
     let currentDetailTab = 'week';
     let fullFilterData = { years: [], quarters: [], months: [], weeks: [], users: [] };
-    let allUsersDirectory = [];
     let eventsBound = false;
 
     const apiCache = new Map();
@@ -449,9 +448,6 @@
       try{
         const data = await fetchJson({ action:'loginusers' });
         if (!data.ok) throw new Error(data.error || 'Không tải được danh sách thành viên');
-
-        allUsersDirectory = data.users || [];
-
         const select = document.getElementById('loginUserID');
         if (!select) return;
         select.innerHTML = '';
@@ -461,7 +457,7 @@
         first.textContent = 'Chọn thành viên';
         select.appendChild(first);
 
-        (allUsersDirectory || []).forEach(u => {
+        (data.users || []).forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.UserID || '';
           opt.textContent = u.FullName ? `${u.FullName} (${u.UserID})` : (u.UserID || '');
@@ -471,10 +467,7 @@
         console.error('LOAD LOGIN USERS ERROR:', err);
         const select = document.getElementById('loginUserID');
         if (select) select.innerHTML = '<option value="">Không tải được danh sách thành viên</option>';
-        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.
-
-Chi tiết lỗi:
-' + (err.message || String(err)));
+        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.\n\nChi tiết lỗi:\n' + (err.message || String(err)));
       }
     }
 
@@ -491,7 +484,7 @@ Chi tiết lỗi:
     }
     function populateCompareSelectors(){
       const ids = ['compareUser1','compareUser2','compareUser3'];
-      const users = (allUsersDirectory || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
+      const users = (fullFilterData.users || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
 
       ids.forEach((id, idx) => {
         const el = document.getElementById(id);
@@ -508,7 +501,7 @@ Chi tiết lỗi:
         users.forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.UserID || '';
-          opt.textContent = (u.FullName || u.UserID || '') + (u.UserID ? ` (${u.UserID})` : '');
+          opt.textContent = u.Label || ((u.FullName || '') + (u.UserID ? ' (' + u.UserID + ')' : ''));
           el.appendChild(opt);
         });
 
@@ -820,8 +813,8 @@ Chi tiết lỗi:
         setBanner('Đang đồng bộ dữ liệu dashboard...', 'info');
 
         const filters = currentFilters();
-        const filtersAllMembers = Object.assign({}, filters, { action: 'dashboardglobal', userId: '' });
-        const chartFilters = Object.assign({}, filters, { action: 'dashboardglobal', month: '', week: '', userId: '' });
+        const filtersAllMembers = Object.assign({}, filters, { userId: '' });
+        const chartFilters = Object.assign({}, filters, { month: '', week: '', userId: '' });
 
         const [dataMain, dataAllMembers, dataCharts] = await Promise.all([
           fetchJson(filters, false),
@@ -840,7 +833,7 @@ Chi tiết lỗi:
 
         renderSummary(dataMain.summary || {}, detailRowsCache);
         renderMonthComboChart(chartRowsCache);
-        renderMemberChart(detailRowsAllMembersCache);
+        renderMemberChart(detailRowsCache);
         renderWeekComboChart(chartRowsCache);
         switchDetailTab(currentDetailTab);
 
@@ -1030,7 +1023,7 @@ Chi tiết lỗi:
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByMonth(rows, uid) }));
       const compareLabels = {};
-      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
+      (fullFilterData.users || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
@@ -1143,7 +1136,7 @@ Chi tiết lỗi:
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByWeek(rows, uid) }));
       const compareLabels = {};
-      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
+      (fullFilterData.users || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
