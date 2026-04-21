@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Dashboard Theo dõi vận động</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --panel:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --success:#16a34a;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:20px;
+      --sidebar:270px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif}
+    a{color:var(--primary);text-decoration:none}
+    button,select,input{font:inherit}
+
+    .app{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:var(--sidebar) 1fr;
+    }
+
+    .sidebar{
+      background:linear-gradient(180deg,#0f172a 0%, #111827 100%);
+      color:#fff;
+      padding:22px 18px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:8px 10px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      margin-bottom:18px;
+    }
+
+    .brand-mark{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+      display:grid;place-items:center;font-weight:800;font-size:18px;
+      box-shadow:0 8px 20px rgba(37,99,235,.35);
+    }
+
+    .brand-title{font-size:18px;font-weight:800;line-height:1.2}
+    .brand-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px}
+
+    .menu-group{margin-top:20px}
+    .menu-title{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:rgba(255,255,255,.55);
+      margin:0 10px 10px;
+    }
+
+    .menu-item{
+      display:flex;align-items:center;gap:12px;
+      padding:12px 14px;border-radius:14px;
+      color:rgba(255,255,255,.9);
+      margin-bottom:6px;
+      background:transparent;
+    }
+    .menu-item.active{background:rgba(59,130,246,.18);border:1px solid rgba(96,165,250,.2)}
+    .menu-item .dot{
+      width:10px;height:10px;border-radius:999px;background:#60a5fa;
+      box-shadow:0 0 0 4px rgba(96,165,250,.12);
+    }
+
+    .sidebar-note{
+      margin-top:24px;padding:14px;border-radius:16px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+      color:rgba(255,255,255,.82);font-size:13px;line-height:1.6;
+    }
+
+    .main{
+      padding:24px;
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex;justify-content:space-between;align-items:flex-start;
+      gap:16px;flex-wrap:wrap;margin-bottom:18px;
+    }
+
+    .page-title{
+      margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em;
+    }
+    .page-subtitle{
+      margin-top:6px;color:var(--muted);font-size:14px;
+    }
+
+    .top-actions{
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+
+    .btn{
+      border:0;border-radius:14px;padding:11px 16px;font-weight:700;
+      cursor:pointer;transition:.2s ease;
+      box-shadow:var(--shadow);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-2)}
+    .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn-success{background:var(--success);color:#fff}
+
+    .panel{
+      background:var(--panel);
+      border:1px solid rgba(226,232,240,.85);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+    }
+
+    .filters{
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .filters-header{
+      display:flex;justify-content:space-between;align-items:center;
+      gap:14px;flex-wrap:wrap;margin-bottom:14px;
+    }
+
+    .section-title{
+      margin:0;font-size:16px;font-weight:800;
+    }
+    .section-sub{
+      margin-top:4px;color:var(--muted);font-size:13px;
+    }
+
+    .filter-grid{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(140px,1fr));
+      gap:12px;
+      align-items:end;
+    }
+
+    .field label{
+      display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;
+    }
+    .field select,.field input{
+      width:100%;height:44px;border-radius:12px;border:1px solid var(--line);
+      background:#fff;padding:0 12px;outline:none;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    .field select:focus,.field input:focus{
+      border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:14px;margin-bottom:18px;
+    }
+
+    .kpi{
+      padding:18px;position:relative;overflow:hidden;
+    }
+    .kpi::after{
+      content:"";
+      position:absolute;right:-24px;top:-24px;width:90px;height:90px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(37,99,235,0));
+    }
+    .kpi-label{font-size:13px;color:var(--muted);font-weight:700}
+    .kpi-value{margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-.03em}
+    .kpi-foot{margin-top:8px;font-size:12px;color:var(--muted)}
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:18px;margin-bottom:18px;
+    }
+
+    .grid-1{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;margin-bottom:18px;
+    }
+
+    .chart-card{padding:18px}
+    .chart-wrap{position:relative;height:340px}
+    .chart-wrap.sm{height:340px}
+    .chart-wrap.md{height:300px}
+
+    .detail-card{padding:18px}
+    .detail-tools{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      flex-wrap:wrap;margin-bottom:14px;
+    }
+
+    .detail-meta{
+      color:var(--muted);font-size:13px;
+    }
+
+    .table-wrap{
+      overflow:auto;border:1px solid var(--line);border-radius:16px;
+    }
+    table{
+      width:100%;border-collapse:separate;border-spacing:0;min-width:1200px;background:#fff;
+    }
+    thead th{
+      position:sticky;top:0;background:#f8fafc;z-index:2;
+      font-size:13px;color:#334155;text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:11px 10px;border-bottom:1px solid #eef2f7;font-size:14px;vertical-align:middle;
+    }
+    tbody tr:hover{background:#f8fbff}
+    .right{text-align:right}
+    .center{text-align:center}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;
+      background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;
+    }
+    .pill.ok{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
+    .pill.zero{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+    .muted{color:var(--muted)}
+
+    .footer-note{
+      color:var(--muted);font-size:12px;margin-top:10px;
+    }
+
+    .mobile-toggle{
+      display:none;
+    }
+
+    @media (max-width: 1400px){
+      .filter-grid{grid-template-columns:repeat(4,1fr)}
+      .kpis{grid-template-columns:repeat(3,1fr) !important}
+    }
+
+    @media (max-width: 1100px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        position:fixed;left:0;top:0;bottom:0;z-index:20;width:min(85vw,320px);
+        transform:translateX(-100%);transition:transform .25s ease;
+      }
+      .sidebar.open{transform:translateX(0)}
+      .mobile-toggle{
+        display:inline-flex;align-items:center;justify-content:center;
+        width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+        background:#fff;box-shadow:var(--shadow);cursor:pointer;
+      }
+      .grid-2{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 768px){
+      .main{padding:16px}
+      .filter-grid{grid-template-columns:repeat(1,1fr)}
+      .kpis{grid-template-columns:repeat(2,1fr)}
+      .page-title{font-size:24px}
+      .kpi-value{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">YT</div>
+        <div>
+          <div class="brand-title">Running Portal</div>
+          <div class="brand-sub">Dashboard dữ liệu Google Sheet</div>
+        </div>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">Điều hướng</div>
+        <div class="menu-item active"><span class="dot"></span><span>Tổng quan dashboard</span></div>
+        <div class="menu-item"><span class="dot"></span><span>Biểu đồ thống kê</span></div>
+        <div class="menu-item"><span class="dot"></span><span>Danh sách chi tiết</span></div>
+        <div class="menu-item"><span class="dot"></span><span>Xuất dữ liệu CSV</span></div>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">Ghi chú</div>
+        <div class="sidebar-note">
+          File này dùng cho frontend portal.<br><br>
+          Chỉ cần thay giá trị <b>API_BASE</b> bằng URL Web App Apps Script đang đọc dữ liệu từ Google Sheet.
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h1 class="page-title">Portal theo dõi vận động</h1>
+            <div class="page-subtitle">Lọc theo năm, quý, tháng, tuần, thành viên; xem KPI, biểu đồ, tỷ lệ tham gia và danh sách chi tiết theo tháng/tuần.</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="btn btn-light" onclick="window.print()">In trang</button>
+          <button class="btn btn-success" onclick="exportCSV()">Xuất CSV chi tiết</button>
+          <button class="btn btn-primary" onclick="loadDashboard()">Tải dữ liệu</button>
+        </div>
+      </div>
+
+      <section class="panel filters">
+        <div class="filters-header">
+          <div>
+            <h2 class="section-title">Bộ lọc dashboard</h2>
+            <div class="section-sub">Bộ lọc phụ thuộc theo Năm → Quý → Tháng → Tuần và thành viên từ bảng Users.</div>
+          </div>
+        </div>
+
+        <div class="filter-grid">
+          <div class="field">
+            <label>Năm</label>
+            <select id="yearFilter"></select>
+          </div>
+          <div class="field">
+            <label>Quý</label>
+            <select id="quarterFilter"></select>
+          </div>
+          <div class="field">
+            <label>Tháng</label>
+            <select id="monthFilter"></select>
+          </div>
+          <div class="field">
+            <label>Tuần</label>
+            <select id="weekFilter"></select>
+          </div>
+          <div class="field">
+            <label>Thành viên</label>
+            <select id="userFilter"></select>
+          </div>
+          <div class="field">
+            <label>Tìm nhanh</label>
+            <input id="keywordFilter" type="text" placeholder="UserID, họ tên, ngày, nguồn..." />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <button class="btn btn-primary" onclick="loadDashboard()">Áp dụng bộ lọc</button>
+          <button class="btn btn-light" onclick="resetFilters()">Xóa lọc</button>
+        </div>
+      </section>
+
+      <section class="kpis" style="grid-template-columns:repeat(5,1fr);">
+        <div class="panel kpi">
+          <div class="kpi-label">Tổng KM đăng ký</div>
+          <div class="kpi-value" id="sumReg">0</div>
+          <div class="kpi-foot">Tổng chỉ tiêu đã đăng ký</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Tổng KM thực tế</div>
+          <div class="kpi-value" id="sumDistance">0</div>
+          <div class="kpi-foot">Tổng quãng đường đã ghi nhận</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Số thành viên tham gia</div>
+          <div class="kpi-value" id="sumMembers">0</div>
+          <div class="kpi-foot">Số thành viên trong dữ liệu lọc</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Số bản ghi</div>
+          <div class="kpi-value" id="sumActivities">0</div>
+          <div class="kpi-foot">Tổng số dòng dữ liệu hiển thị</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Tỷ lệ hoàn thành</div>
+          <div class="kpi-value" id="sumCompletion">0%</div>
+          <div class="kpi-foot">DistanceKM / KMReg</div>
+        </div>
+
+        <div class="panel kpi">
+          <div class="kpi-label">Pace trung bình</div>
+          <div class="kpi-value" id="sumPace">00:00</div>
+          <div class="kpi-foot">Trung bình pace của dữ liệu lọc</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Tỷ lệ tham gia thực tế</div>
+          <div class="kpi-value" id="sumParticipation">0%</div>
+          <div class="kpi-foot">Thành viên có KM thực tế ≠ 0</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Tích cực &gt; 90%</div>
+          <div class="kpi-value" id="sumActive90">0</div>
+          <div class="kpi-foot">Theo số buổi trong kỳ</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Không tích cực &lt; 50%</div>
+          <div class="kpi-value" id="sumUnder50">0</div>
+          <div class="kpi-foot">Theo số buổi trong kỳ</div>
+        </div>
+        <div class="panel kpi">
+          <div class="kpi-label">Không tập / Dưỡng sức</div>
+          <div class="kpi-value" id="sumNoTrainRest">0 / 0</div>
+          <div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div>
+        </div>
+      </section>
+
+      <section class="grid-2">
+        <div class="panel chart-card">
+          <h2 class="section-title">KM và Pace theo tháng</h2>
+          <div class="section-sub">Biểu đồ line hiển thị KM đăng ký, KM thực tế kết hợp cột hiển thị Pace trung bình theo tháng.</div>
+          <div class="chart-wrap">
+            <canvas id="monthComboChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel chart-card">
+          <h2 class="section-title">Top thành viên theo KM thực tế</h2>
+          <div class="section-sub">Top 10 thành viên có tổng DistanceKM cao nhất.</div>
+          <div class="chart-wrap sm">
+            <canvas id="memberChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid-1">
+        <div class="panel chart-card">
+          <h2 class="section-title">KM và Pace theo tuần</h2>
+          <div class="section-sub">Biểu đồ line hiển thị KM đăng ký, KM thực tế kết hợp cột hiển thị Pace trung bình theo tuần.</div>
+          <div class="chart-wrap md">
+            <canvas id="comboChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel detail-card">
+        <div class="detail-tools">
+          <div>
+            <h2 class="section-title" style="margin-bottom:4px;">Danh sách chi tiết</h2>
+            <div class="detail-meta" id="detailMeta">Đang tải dữ liệu...</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-light" id="tabMonthBtn" onclick="switchDetailTab('month')">Tab tháng (M)</button>
+            <button class="btn btn-primary" id="tabWeekBtn" onclick="switchDetailTab('week')">Tab tuần (W)</button>
+            <div class="pill" id="statusPill">Sẵn sàng</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Họ tên</th>
+                <th class="right">KM đăng ký</th>
+                <th class="right">KM thực tế</th>
+                <th class="right">Tỷ lệ hoàn thành</th>
+                <th class="center">Mức đạt</th>
+                <th>Pace</th>
+                <th class="center">Năm</th>
+                <th class="center">Quý</th>
+                <th class="center">Tháng</th>
+                <th class="center">Tuần</th>
+              </tr>
+            </thead>
+            <tbody id="detailBody"></tbody>
+          </table>
+        </div>
+        <div class="footer-note">
+          Mẹo: thay <b>API_BASE</b> trong file này bằng URL Web App của Apps Script. Backend nên trả các action: <code>filters</code> và <code>dashboard</code>.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbxmQcdScK7a1HNSqQT_NuE_RK-Z42W3QB1M6Yl0mhEuDuZbnFSCBxglihDi4oPuPl5Nbg/exec';
+
+    let monthComboChart = null;
+    let memberChart = null;
+    let comboChart = null;
+    let detailRowsCache = [];
+    let currentDetailTab = 'week';
+    let fullFilterData = {
+      years: [],
+      quarters: [],
+      months: [],
+      weeks: [],
+      users: []
+    };
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function apiUrl(params) {
+      const url = new URL(API_BASE);
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== '' && v !== null && v !== undefined) url.searchParams.set(k, v);
+      });
+      return url.toString();
+    }
+
+    async function fetchJson(params) {
+      const res = await fetch(apiUrl(params));
+      if (!res.ok) throw new Error('Không gọi được API');
+      return await res.json();
+    }
+
+    function fillSelect(id, items, defaultLabel) {
+      const el = document.getElementById(id);
+      const current = el.value;
+      el.innerHTML = '';
+
+      const all = document.createElement('option');
+      all.value = '';
+      all.textContent = defaultLabel;
+      el.appendChild(all);
+
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        if (typeof item === 'object') {
+          opt.value = item.value;
+          opt.textContent = item.label;
+        } else {
+          opt.value = item;
+          opt.textContent = item;
+        }
+        el.appendChild(opt);
+      });
+
+      if ([...el.options].some(o => o.value === current)) el.value = current;
+    }
+
+    async function initFilters() {
+      setStatus('Đang tải bộ lọc...', 'loading');
+      const data = await fetchJson({ action: 'filters' });
+      if (!data.ok) throw new Error(data.error || 'Không tải được filters');
+
+      fullFilterData = {
+        years: data.years || [],
+        quarters: data.quarters || [],
+        months: data.months || [],
+        weeks: data.weeks || [],
+        users: data.users || []
+      };
+
+      renderDependentFilters();
+      bindFilterEvents();
+      setStatus('Đã tải bộ lọc', 'ok');
+    }
+
+    function bindFilterEvents() {
+      document.getElementById('yearFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('quarterFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('monthFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('keywordFilter').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') loadDashboard();
+      });
+    }
+
+    function renderDependentFilters() {
+      const y = Number(document.getElementById('yearFilter').value || 0);
+      const q = Number(document.getElementById('quarterFilter').value || 0);
+      const m = Number(document.getElementById('monthFilter').value || 0);
+
+      fillSelect(
+        'yearFilter',
+        fullFilterData.years,
+        'Tất cả năm'
+      );
+
+      fillSelect(
+        'quarterFilter',
+        fullFilterData.quarters.map(q => ({ value: q, label: 'Quý ' + q })),
+        'Tất cả quý'
+      );
+
+      let months = [...fullFilterData.months];
+      if (q) months = months.filter(x => Math.ceil(Number(x) / 3) === q);
+
+      fillSelect(
+        'monthFilter',
+        months.map(m => ({ value: m, label: 'Tháng ' + m })),
+        'Tất cả tháng'
+      );
+
+      let weeks = [...fullFilterData.weeks];
+      if (m) {
+        // Với cấu trúc backend hiện tại chỉ có WeekNum độc lập.
+        // Giữ week là toàn bộ nếu không có API mapping tháng-tuần chi tiết.
+        weeks = [...fullFilterData.weeks];
+      } else if (q || y) {
+        weeks = [...fullFilterData.weeks];
+      }
+
+      fillSelect(
+        'weekFilter',
+        weeks.map(w => ({ value: w, label: 'Tuần ' + w })),
+        'Tất cả tuần'
+      );
+
+      fillSelect(
+        'userFilter',
+        fullFilterData.users.map(u => ({ value: u.UserID, label: u.Label || (u.UserID + ' - ' + (u.FullName || '')) })),
+        'Tất cả thành viên'
+      );
+
+      if (y) document.getElementById('yearFilter').value = String(y);
+      if (q) document.getElementById('quarterFilter').value = String(q);
+      if (m) document.getElementById('monthFilter').value = String(m);
+    }
+
+    function currentFilters() {
+      return {
+        action: 'dashboard',
+        year: document.getElementById('yearFilter').value,
+        quarter: document.getElementById('quarterFilter').value,
+        month: document.getElementById('monthFilter').value,
+        week: document.getElementById('weekFilter').value,
+        userId: document.getElementById('userFilter').value,
+        keyword: document.getElementById('keywordFilter').value.trim()
+      };
+    }
+
+    async function loadDashboard() {
+      try {
+        setStatus('Đang tải dữ liệu dashboard...', 'loading');
+        const data = await fetchJson(currentFilters());
+        if (!data.ok) throw new Error(data.error || 'Không tải được dashboard');
+
+        detailRowsCache = data.details || [];
+        renderSummary(data.summary || {}, detailRowsCache);
+        renderMonthComboChart(detailRowsCache);
+        renderMemberChart((data.charts && data.charts.byMember) || []);
+        renderComboChart(detailRowsCache);
+        renderDetails(detailRowsCache);
+        document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(data.totalRows || detailRowsCache.length)} bản ghi phù hợp bộ lọc hiện tại.`;
+        switchDetailTab(currentDetailTab);
+        setStatus('Đã tải dữ liệu thành công', 'ok');
+      } catch (err) {
+        console.error(err);
+        setStatus('Lỗi tải dữ liệu', 'error');
+        alert(err.message || 'Có lỗi khi tải dữ liệu');
+      }
+    }
+
+    function renderSummary(s, rows) {
+      document.getElementById('sumReg').textContent = formatNumber(s.totalReg || 0);
+      document.getElementById('sumDistance').textContent = formatNumber(s.totalDistance || 0);
+      document.getElementById('sumMembers').textContent = formatNumber(s.totalMembers || 0);
+      document.getElementById('sumActivities').textContent = formatNumber(s.totalActivities || 0);
+      document.getElementById('sumCompletion').textContent = formatNumber(s.completionRate || 0) + '%';
+      document.getElementById('sumPace').textContent = s.avgPaceText || '00:00';
+
+      const stats = buildParticipationStats(rows || []);
+      document.getElementById('sumParticipation').textContent = formatNumber(stats.participationRate) + '%';
+      document.getElementById('sumActive90').textContent = formatNumber(stats.active90Count);
+      document.getElementById('sumUnder50').textContent = formatNumber(stats.under50Count);
+      document.getElementById('sumNoTrainRest').textContent = formatNumber(stats.noTrainingCount) + ' / ' + formatNumber(stats.restCount);
+    }
+
+    function renderMonthComboChart(rows) {
+      const monthMap = {};
+
+      (rows || []).forEach(r => {
+        const key = Number(r.MonthNum || 0);
+        if (!key) return;
+
+        if (!monthMap[key]) {
+          monthMap[key] = {
+            label: 'T' + key,
+            RegKM: 0,
+            DistanceKM: 0,
+            paceSum: 0,
+            paceCount: 0
+          };
+        }
+
+        monthMap[key].RegKM += Number(r.KMReg || 0);
+        monthMap[key].DistanceKM += Number(r.DistanceKM || 0);
+
+        if (Number(r.PaceSeconds || 0) > 0) {
+          monthMap[key].paceSum += Number(r.PaceSeconds || 0);
+          monthMap[key].paceCount += 1;
+        }
+      });
+
+      const rowsAgg = Object.keys(monthMap)
+        .map(k => {
+          const item = monthMap[k];
+          return {
+            label: item.label,
+            RegKM: item.RegKM,
+            DistanceKM: item.DistanceKM,
+            PaceMin: item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+            sortNum: Number(k)
+          };
+        })
+        .sort((a, b) => a.sortNum - b.sortNum);
+
+      const ctx = document.getElementById('monthComboChart');
+      if (monthComboChart) monthComboChart.destroy();
+
+      monthComboChart = new Chart(ctx, {
+        data: {
+          labels: rowsAgg.map(x => x.label),
+          datasets: [
+            {
+              type: 'line',
+              label: 'KM đăng ký',
+              data: rowsAgg.map(x => x.RegKM),
+              tension: .35,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'KM thực tế',
+              data: rowsAgg.map(x => x.DistanceKM),
+              tension: .35,
+              yAxisID: 'y'
+            },
+            {
+              type: 'bar',
+              label: 'Pace TB (phút/km)',
+              data: rowsAgg.map(x => x.PaceMin),
+              borderRadius: 8,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'KM' } },
+            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Phút/km' } }
+          }
+        }
+      });
+    }
+
+    function renderMemberChart(rows) {
+      const ctx = document.getElementById('memberChart');
+      if (memberChart) memberChart.destroy();
+
+      memberChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: rows.map(x => x.label),
+          datasets: [{
+            label: 'KM thực tế',
+            data: rows.map(x => x.DistanceKM),
+            borderRadius: 8
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderComboChart(rows) {
+      const weekMap = {};
+
+      rows.forEach(r => {
+        const key = Number(r.WeekNum || 0);
+        if (!key) return;
+        if (!weekMap[key]) {
+          weekMap[key] = {
+            label: 'W' + key,
+            RegKM: 0,
+            DistanceKM: 0,
+            paceSum: 0,
+            paceCount: 0
+          };
+        }
+        weekMap[key].RegKM += Number(r.KMReg || 0);
+        weekMap[key].DistanceKM += Number(r.DistanceKM || 0);
+        if (Number(r.PaceSeconds || 0) > 0) {
+          weekMap[key].paceSum += Number(r.PaceSeconds || 0);
+          weekMap[key].paceCount += 1;
+        }
+      });
+
+      const rowsAgg = Object.keys(weekMap)
+        .map(k => {
+          const item = weekMap[k];
+          return {
+            label: item.label,
+            RegKM: item.RegKM,
+            DistanceKM: item.DistanceKM,
+            PaceMin: item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+            sortNum: Number(k)
+          };
+        })
+        .sort((a,b) => a.sortNum - b.sortNum);
+
+      const ctx = document.getElementById('comboChart');
+      if (comboChart) comboChart.destroy();
+
+      comboChart = new Chart(ctx, {
+        data: {
+          labels: rowsAgg.map(x => x.label),
+          datasets: [
+            {
+              type: 'line',
+              label: 'KM đăng ký',
+              data: rowsAgg.map(x => x.RegKM),
+              tension: .35,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'KM thực tế',
+              data: rowsAgg.map(x => x.DistanceKM),
+              tension: .35,
+              yAxisID: 'y'
+            },
+            {
+              type: 'bar',
+              label: 'Pace TB (phút/km)',
+              data: rowsAgg.map(x => x.PaceMin),
+              borderRadius: 8,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'KM' } },
+            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Phút/km' } }
+          }
+        }
+      });
+    }
+
+    function buildParticipationStats(rows) {
+      const memberMap = {};
+
+      rows.forEach(r => {
+        const key = String(r.FullName || '').trim() || ('USER_' + String(r.UserID || ''));
+        if (!memberMap[key]) {
+          memberMap[key] = {
+            name: key,
+            totalSessions: 0,
+            positiveSessions: 0,
+            hasActual: false,
+            noTrainingOnly: false,
+            restOnly: false,
+            rows: []
+          };
+        }
+        const kmReg = Number(r.KMReg || 0);
+        const kmActual = Number(r.DistanceKM || 0);
+
+        memberMap[key].totalSessions += 1;
+        if (kmActual !== 0) {
+          memberMap[key].positiveSessions += 1;
+          memberMap[key].hasActual = true;
+        }
+        memberMap[key].rows.push({ kmReg, kmActual });
+      });
+
+      const members = Object.values(memberMap);
+      members.forEach(m => {
+        m.noTrainingOnly = m.rows.some(x => x.kmReg !== 0 && x.kmActual === 0) && !m.rows.some(x => x.kmActual !== 0);
+        m.restOnly = m.rows.every(x => x.kmReg === 0);
+      });
+
+      const totalMembers = members.length || 0;
+      const participationCount = members.filter(m => m.hasActual).length;
+      const active90Count = members.filter(m => m.totalSessions > 0 && (m.positiveSessions / m.totalSessions) > 0.9).length;
+      const under50Count = members.filter(m => m.totalSessions > 0 && (m.positiveSessions / m.totalSessions) < 0.5).length;
+      const noTrainingCount = members.filter(m => m.noTrainingOnly).length;
+      const restCount = members.filter(m => m.restOnly).length;
+
+      return {
+        participationRate: totalMembers ? +(participationCount / totalMembers * 100).toFixed(2) : 0,
+        active90Count,
+        under50Count,
+        noTrainingCount,
+        restCount
+      };
+    }
+
+    function switchDetailTab(tab) {
+      currentDetailTab = tab;
+      document.getElementById('tabMonthBtn').className = 'btn ' + (tab === 'month' ? 'btn-primary' : 'btn-light');
+      document.getElementById('tabWeekBtn').className = 'btn ' + (tab === 'week' ? 'btn-primary' : 'btn-light');
+      renderDetails(detailRowsCache);
+    }
+
+    function renderDetails(rows) {
+      const tbody = document.getElementById('detailBody');
+      tbody.innerHTML = '';
+
+      const filteredRows = (rows || []).filter(r => {
+        const id = String(r.ActivityID || '').toUpperCase();
+        const weekNum = Number(r.WeekNum || 0);
+        return currentDetailTab === 'month'
+          ? id.indexOf('M') > -1
+          : (id.indexOf('W') > -1 && weekNum !== 0);
+      });
+
+      if (!filteredRows.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="center muted" style="padding:18px;">Không có dữ liệu phù hợp.</td></tr>';
+        return;
+      }
+
+      filteredRows.forEach(r => {
+        const kmReg = Number(r.KMReg || 0);
+        const kmActual = Number(r.DistanceKM || 0);
+        const completion = kmReg > 0 ? (kmActual / kmReg) * 100 : 0;
+        const reached = kmReg > 0 && kmActual >= kmReg;
+        const zero = kmActual === 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(r.FullName || '')}</td>
+          <td class="right">${formatNumber(kmReg)}</td>
+          <td class="right">${formatNumber(kmActual)}</td>
+          <td class="right">${formatNumber(completion)}%</td>
+          <td class="center">
+            ${reached
+              ? '<span class="pill ok">Đạt</span>'
+              : zero
+                ? '<span class="pill zero">0 KM</span>'
+                : '<span class="pill">Chưa đạt</span>'}
+          </td>
+          <td>${escapeHtml(r.Pace || '')}</td>
+          <td class="center">${escapeHtml(String(r.Year || ''))}</td>
+          <td class="center">${escapeHtml(String(r.Quarter || ''))}</td>
+          <td class="center">${escapeHtml(String(r.MonthNum || ''))}</td>
+          <td class="center">${escapeHtml(String(r.WeekNum || ''))}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(filteredRows.length)} bản ghi ở tab ${currentDetailTab === 'month' ? 'tháng (M)' : 'tuần (W)'}.`;
+    }
+
+    function exportCSV() {
+      if (!detailRowsCache.length) {
+        alert('Không có dữ liệu để xuất CSV.');
+        return;
+      }
+
+      const headers = [
+        'FullName','KMReg','DistanceKM','CompletionRate','Pace','Year','Quarter','MonthNum','WeekNum','ActivityID'
+      ];
+
+      const csv = [
+        headers.join(','),
+        ...detailRowsCache
+          .filter(r => currentDetailTab === 'month'
+            ? String(r.ActivityID || '').toUpperCase().includes('M')
+            : (String(r.ActivityID || '').toUpperCase().includes('W') && Number(r.WeekNum || 0) !== 0))
+          .map(r => {
+            const obj = Object.assign({}, r, {
+              CompletionRate: Number(r.KMReg || 0) > 0 ? ((Number(r.DistanceKM || 0) / Number(r.KMReg || 0)) * 100).toFixed(2) + '%' : '0%'
+            });
+            return headers.map(h => csvCell(obj[h])).join(',');
+          })
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date();
+      const fileName = `dashboard_detail_${stamp.getFullYear()}${String(stamp.getMonth()+1).padStart(2,'0')}${String(stamp.getDate()).padStart(2,'0')}.csv`;
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function csvCell(v) {
+      const s = String(v ?? '');
+      return '"' + s.replaceAll('"', '""') + '"';
+    }
+
+    function setStatus(text, type) {
+      const pill = document.getElementById('statusPill');
+      pill.textContent = text;
+      pill.className = 'pill';
+      if (type === 'ok') pill.classList.add('ok');
+      if (type === 'error') pill.classList.add('zero');
+    }
+
+    function resetFilters() {
+      document.getElementById('yearFilter').value = '';
+      document.getElementById('quarterFilter').value = '';
+      document.getElementById('monthFilter').value = '';
+      document.getElementById('weekFilter').value = '';
+      document.getElementById('userFilter').value = '';
+      document.getElementById('keywordFilter').value = '';
+      renderDependentFilters();
+      loadDashboard();
+    }
+
+    function formatNumber(n) {
+      return Number(n || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttribute(str) {
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    (async function boot() {
+      try {
+        await initFilters();
+        await loadDashboard();
+      } catch (err) {
+        console.error(err);
+        setStatus('Lỗi khởi tạo', 'error');
+        alert('Khởi tạo dashboard thất bại. Kiểm tra lại API_BASE và backend Apps Script.');
+      }
+    })();
+  </script>
+</body>
+</html>
