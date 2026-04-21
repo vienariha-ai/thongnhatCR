@@ -3,302 +3,170 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal Dashboard Theo dõi vận động</title>
+  <title>Thống Nhất CR</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root{
-      --bg:#f3f6fb;
-      --panel:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --primary:#2563eb;
-      --primary-2:#1d4ed8;
-      --success:#16a34a;
-      --warn:#f59e0b;
-      --danger:#ef4444;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
-      --radius:20px;
-      --sidebar:270px;
+      --bg:#f4f7fb; --panel:#ffffff; --panel2:#f8fafc; --text:#0f172a; --muted:#64748b;
+      --line:#e2e8f0; --primary:#0f766e; --primary2:#115e59; --danger:#dc2626; --success:#16a34a;
+      --shadow:0 10px 30px rgba(15,23,42,.08); --radius:20px; --sidebar:280px;
     }
-
+    body.dark{
+      --bg:#07111f; --panel:#0f172a; --panel2:#0b1220; --text:#e5eef9; --muted:#93a4b8;
+      --line:#203046; --primary:#2dd4bf; --primary2:#14b8a6; --shadow:0 12px 30px rgba(0,0,0,.28);
+    }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif}
-    a{color:var(--primary);text-decoration:none}
-    button,select,input{font:inherit}
-
-    .app{
-      min-height:100vh;
-      display:grid;
-      grid-template-columns:var(--sidebar) 1fr;
-    }
-
-    .sidebar{
-      background:linear-gradient(180deg,#0f172a 0%, #111827 100%);
-      color:#fff;
-      padding:22px 18px;
-      position:sticky;
-      top:0;
-      height:100vh;
-      overflow:auto;
-    }
-
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      padding:8px 10px 18px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      margin-bottom:18px;
-    }
-
-    .brand-mark{
-      width:44px;height:44px;border-radius:14px;
-      background:linear-gradient(135deg,#3b82f6,#1d4ed8);
-      display:grid;place-items:center;font-weight:800;font-size:18px;
-      box-shadow:0 8px 20px rgba(37,99,235,.35);
-    }
-
-    .brand-title{font-size:18px;font-weight:800;line-height:1.2}
-    .brand-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px}
-
-    .menu-group{margin-top:20px}
-    .menu-title{
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:rgba(255,255,255,.55);
-      margin:0 10px 10px;
-    }
-
-    .menu-item{
-      display:flex;align-items:center;gap:12px;
-      padding:12px 14px;border-radius:14px;
-      color:rgba(255,255,255,.9);
-      margin-bottom:6px;
-      background:transparent;
-    }
-    .menu-item.active{background:rgba(59,130,246,.18);border:1px solid rgba(96,165,250,.2)}
-    .menu-item .dot{
-      width:10px;height:10px;border-radius:999px;background:#60a5fa;
-      box-shadow:0 0 0 4px rgba(96,165,250,.12);
-    }
-
-    .sidebar-note{
-      margin-top:24px;padding:14px;border-radius:16px;
-      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
-      color:rgba(255,255,255,.82);font-size:13px;line-height:1.6;
-    }
-
-    .main{
-      padding:24px;
-      overflow:hidden;
-    }
-
-    .topbar{
-      display:flex;justify-content:space-between;align-items:flex-start;
-      gap:16px;flex-wrap:wrap;margin-bottom:18px;
-    }
-
-    .page-title{
-      margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em;
-    }
-    .page-subtitle{
-      margin-top:6px;color:var(--muted);font-size:14px;
-    }
-
-    .top-actions{
-      display:flex;gap:10px;flex-wrap:wrap;
-    }
-
-    .btn{
-      border:0;border-radius:14px;padding:11px 16px;font-weight:700;
-      cursor:pointer;transition:.2s ease;
-      box-shadow:var(--shadow);
-    }
+    .hidden{display:none!important}
+    .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top left, rgba(15,118,110,.14), transparent 28%),radial-gradient(circle at bottom right, rgba(37,99,235,.12), transparent 24%),var(--bg)}
+    .login-card{width:min(460px,100%);background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:28px;overflow:hidden}
+    .login-top{padding:26px 26px 16px;background:linear-gradient(135deg, rgba(15,118,110,.12), rgba(37,99,235,.08));border-bottom:1px solid var(--line)}
+    .brand-row{display:flex;align-items:center;gap:14px}
+    .brand-mark{width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;font-size:24px;font-weight:800;display:grid;place-items:center}
+    .brand-name{font-size:22px;font-weight:800}
+    .brand-desc{color:var(--muted);font-size:13px;margin-top:4px}
+    .login-body{padding:24px 26px 26px}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+    .field input{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 14px;outline:none}
+    .field input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(15,118,110,.12)}
+    .helper{font-size:12px;color:var(--muted);line-height:1.6}
+    .btn{border:0;border-radius:14px;padding:11px 16px;font-weight:700;cursor:pointer;transition:.2s ease;white-space:nowrap}
     .btn:hover{transform:translateY(-1px)}
     .btn-primary{background:var(--primary);color:#fff}
-    .btn-primary:hover{background:var(--primary-2)}
-    .btn-light{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn-primary:hover{background:var(--primary2)}
+    .btn-light{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:var(--danger);color:#fff}
     .btn-success{background:var(--success);color:#fff}
-
-    .panel{
-      background:var(--panel);
-      border:1px solid rgba(226,232,240,.85);
-      box-shadow:var(--shadow);
-      border-radius:var(--radius);
-    }
-
-    .filters{
-      padding:18px;
-      margin-bottom:18px;
-    }
-
-    .filters-header{
-      display:flex;justify-content:space-between;align-items:center;
-      gap:14px;flex-wrap:wrap;margin-bottom:14px;
-    }
-
-    .section-title{
-      margin:0;font-size:16px;font-weight:800;
-    }
-    .section-sub{
-      margin-top:4px;color:var(--muted);font-size:13px;
-    }
-
-    .filter-grid{
-      display:grid;
-      grid-template-columns:repeat(6,minmax(140px,1fr));
-      gap:12px;
-      align-items:end;
-    }
-
-    .field label{
-      display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;
-    }
-    .field select,.field input{
-      width:100%;height:44px;border-radius:12px;border:1px solid var(--line);
-      background:#fff;padding:0 12px;outline:none;
-      transition:border-color .2s ease, box-shadow .2s ease;
-    }
-    .field select:focus,.field input:focus{
-      border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.12);
-    }
-
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(6,1fr);
-      gap:14px;margin-bottom:18px;
-    }
-
-    .kpi{
-      padding:18px;position:relative;overflow:hidden;
-    }
-    .kpi::after{
-      content:"";
-      position:absolute;right:-24px;top:-24px;width:90px;height:90px;border-radius:50%;
-      background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(37,99,235,0));
-    }
+    .login-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .login-status{margin-top:10px;font-size:13px;white-space:pre-wrap;line-height:1.6;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.15);padding:10px 12px;border-radius:12px;display:none;color:var(--danger)}
+    .app{min-height:100vh;display:grid;grid-template-columns:var(--sidebar) 1fr}
+    .sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:linear-gradient(180deg,#071527 0%, #0d1b2a 100%);color:#fff;padding:20px 18px;border-right:1px solid rgba(255,255,255,.06)}
+    .sidebar .brand{display:flex;gap:12px;align-items:center;padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
+    .sidebar .brand-text strong{display:block;font-size:18px}
+    .sidebar .brand-text span{display:block;color:rgba(255,255,255,.72);font-size:12px;margin-top:2px}
+    .user-box{border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:14px;background:rgba(255,255,255,.05);margin-bottom:18px}
+    .user-box .u1{font-size:15px;font-weight:700}
+    .user-box .u2{font-size:12px;color:rgba(255,255,255,.72);margin-top:4px}
+    .menu-title{margin:14px 10px 10px;color:rgba(255,255,255,.55);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .menu-item{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-bottom:6px;border-radius:14px;color:rgba(255,255,255,.88);border:1px solid transparent}
+    .menu-item.active{background:rgba(45,212,191,.12);border-color:rgba(45,212,191,.15)}
+    .menu-dot{width:10px;height:10px;border-radius:999px;background:#5eead4}
+    .sidebar-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+    .sidebar-actions .btn{padding:9px 12px;border-radius:12px;font-size:13px}
+    .main{padding:24px;overflow:hidden}
+    .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+    .mobile-toggle{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);box-shadow:var(--shadow);cursor:pointer}
+    .page-title{margin:0;font-size:30px;font-weight:800}
+    .page-subtitle{margin-top:6px;color:var(--muted);font-size:14px}
+    .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:22px}
+    .status-banner{display:none;margin-bottom:16px;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--panel);font-size:13px}
+    .status-banner.error{display:block;border-color:rgba(220,38,38,.18);background:rgba(220,38,38,.06);color:var(--danger)}
+    .status-banner.info{display:block;border-color:rgba(15,118,110,.18);background:rgba(15,118,110,.06);color:var(--primary)}
+    .filters{padding:18px;margin-bottom:18px}
+    .filters-header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+    .section-title{margin:0;font-size:16px;font-weight:800}
+    .section-sub{margin-top:4px;color:var(--muted);font-size:13px}
+    .filter-grid{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:12px;align-items:end}
+    .field2 label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+    .field2 select,.field2 input{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 12px;outline:none}
+    .quick-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .quick-chip{border:1px solid var(--line);background:var(--panel);padding:8px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
+    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+    .kpi{padding:18px;position:relative;overflow:hidden}
+    .kpi::after{content:"";position:absolute;right:-28px;top:-28px;width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,rgba(15,118,110,.12),transparent)}
     .kpi-label{font-size:13px;color:var(--muted);font-weight:700}
-    .kpi-value{margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-.03em}
+    .kpi-value{margin-top:8px;font-size:30px;font-weight:800}
     .kpi-foot{margin-top:8px;font-size:12px;color:var(--muted)}
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:2fr 1fr;
-      gap:18px;margin-bottom:18px;
-    }
-
-    .grid-1{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:18px;margin-bottom:18px;
-    }
-
+    .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
+    .grid-1{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px}
     .chart-card{padding:18px}
     .chart-wrap{position:relative;height:340px}
-    .chart-wrap.sm{height:340px}
-    .chart-wrap.md{height:300px}
-
+    .chart-wrap.md{height:310px}
     .detail-card{padding:18px}
-    .detail-tools{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;
-      flex-wrap:wrap;margin-bottom:14px;
-    }
-
-    .detail-meta{
-      color:var(--muted);font-size:13px;
-    }
-
-    .table-wrap{
-      overflow:auto;border:1px solid var(--line);border-radius:16px;
-    }
-    table{
-      width:100%;border-collapse:separate;border-spacing:0;min-width:1200px;background:#fff;
-    }
-    thead th{
-      position:sticky;top:0;background:#f8fafc;z-index:2;
-      font-size:13px;color:#334155;text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);
-      white-space:nowrap;
-    }
-    tbody td{
-      padding:11px 10px;border-bottom:1px solid #eef2f7;font-size:14px;vertical-align:middle;
-    }
-    tbody tr:hover{background:#f8fbff}
-    .right{text-align:right}
-    .center{text-align:center}
-
-    .pill{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;
-      background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;
-    }
-    .pill.ok{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
-    .pill.zero{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
-    .muted{color:var(--muted)}
-
-    .footer-note{
-      color:var(--muted);font-size:12px;margin-top:10px;
-    }
-
-    .mobile-toggle{
-      display:none;
-    }
-
-    @media (max-width: 1400px){
-      .filter-grid{grid-template-columns:repeat(4,1fr)}
-      .kpis{grid-template-columns:repeat(3,1fr) !important}
-    }
-
-    @media (max-width: 1100px){
-      .app{grid-template-columns:1fr}
-      .sidebar{
-        position:fixed;left:0;top:0;bottom:0;z-index:20;width:min(85vw,320px);
-        transform:translateX(-100%);transition:transform .25s ease;
-      }
-      .sidebar.open{transform:translateX(0)}
-      .mobile-toggle{
-        display:inline-flex;align-items:center;justify-content:center;
-        width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
-        background:#fff;box-shadow:var(--shadow);cursor:pointer;
-      }
-      .grid-2{grid-template-columns:1fr}
-    }
-
-    @media (max-width: 768px){
-      .main{padding:16px}
-      .filter-grid{grid-template-columns:repeat(1,1fr)}
-      .kpis{grid-template-columns:repeat(2,1fr)}
-      .page-title{font-size:24px}
-      .kpi-value{font-size:24px}
-    }
+    .detail-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .detail-meta{font-size:13px;color:var(--muted)}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:1000px;background:var(--panel)}
+    thead th{position:sticky;top:0;z-index:2;background:var(--panel2);text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+    tbody td{padding:11px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+    .right{text-align:right}.center{text-align:center}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,118,110,.08);color:var(--primary);border:1px solid rgba(15,118,110,.14)}
+    .pill.ok{background:rgba(22,163,74,.12);color:var(--success);border-color:rgba(22,163,74,.15)}
+    .pill.zero{background:rgba(217,119,6,.12);color:#d97706;border-color:rgba(217,119,6,.15)}
+    .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
+    .toast{position:fixed;right:18px;bottom:18px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);padding:12px 14px;border-radius:14px;z-index:1000;display:none;min-width:240px}
+    .loading-overlay{position:fixed;inset:0;background:rgba(15,23,42,.26);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1200}
+    .loading-card{min-width:260px;max-width:90vw;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:20px;padding:22px 20px;text-align:center}
+    .spinner{width:42px;height:42px;border:4px solid rgba(148,163,184,.25);border-top-color:var(--primary);border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media (max-width:1400px){.filter-grid{grid-template-columns:repeat(4,1fr)}.kpis{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:1100px){.app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:20;width:min(86vw,320px);transform:translateX(-100%);transition:transform .25s ease}.sidebar.open{transform:translateX(0)}.mobile-toggle{display:inline-flex;align-items:center;justify-content:center}.grid-2{grid-template-columns:1fr}}
+    @media (max-width:768px){.main{padding:16px}.filter-grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.page-title{font-size:24px}.kpi-value{font-size:24px}}
   </style>
 </head>
 <body>
-  <div class="app">
+  <section id="authView" class="auth-shell">
+    <div class="login-card">
+      <div class="login-top">
+        <div class="brand-row">
+          <div class="brand-mark">TN</div>
+          <div>
+            <div class="brand-name">Thống Nhất CR</div>
+            <div class="brand-desc">Clinical Running Dashboard • Enterprise Portal</div>
+          </div>
+        </div>
+      </div>
+      <div class="login-body">
+        <div class="field">
+          <label>Thành viên</label>
+          <select id="loginUserID" style="width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 14px;outline:none">
+            <option value="">Đang tải danh sách thành viên...</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Mật khẩu</label>
+          <input id="loginPassword" type="password" placeholder="Nhập mật khẩu hoặc để trống nếu hệ chưa bật password" autocomplete="current-password" />
+        </div>
+        <div class="helper">
+          Hệ thống đăng nhập bằng cách chọn tên thành viên từ danh sách đồng bộ từ sheet Users. Nếu backend chưa bật password, có thể để trống mật khẩu.
+        </div>
+        <div class="login-actions">
+          <button class="btn btn-primary" id="loginBtn" onclick="login()">Đăng nhập</button>
+          <button class="btn btn-light" onclick="toggleTheme()">Đổi giao diện</button>
+        </div>
+        <div id="loginStatus" class="login-status"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appView" class="app hidden">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="brand-mark">YT</div>
-        <div>
-          <div class="brand-title">Running Portal</div>
-          <div class="brand-sub">Dashboard dữ liệu Google Sheet</div>
+        <div class="brand-mark">TN</div>
+        <div class="brand-text">
+          <strong>Thống Nhất CR</strong>
+          <span>Enterprise Dashboard</span>
         </div>
       </div>
 
-      <div class="menu-group">
-        <div class="menu-title">Điều hướng</div>
-        <div class="menu-item active"><span class="dot"></span><span>Tổng quan dashboard</span></div>
-        <div class="menu-item"><span class="dot"></span><span>Biểu đồ thống kê</span></div>
-        <div class="menu-item"><span class="dot"></span><span>Danh sách chi tiết</span></div>
-        <div class="menu-item"><span class="dot"></span><span>Xuất dữ liệu CSV</span></div>
+      <div class="user-box">
+        <div class="u1" id="sidebarUserName">-</div>
+        <div class="u2" id="sidebarUserMeta">-</div>
       </div>
 
-      <div class="menu-group">
-        <div class="menu-title">Ghi chú</div>
-        <div class="sidebar-note">
-          File này dùng cho frontend portal.<br><br>
-          Chỉ cần thay giá trị <b>API_BASE</b> bằng URL Web App Apps Script đang đọc dữ liệu từ Google Sheet.
-        </div>
+      <div class="menu-title">Tổng quan</div>
+      <div class="menu-item active"><span class="menu-dot"></span><span>Dashboard điều hành</span></div>
+      <div class="menu-item"><span class="menu-dot"></span><span>Biểu đồ tháng / tuần</span></div>
+      <div class="menu-item"><span class="menu-dot"></span><span>Chi tiết tháng / tuần</span></div>
+
+      <div class="sidebar-actions">
+        <button class="btn btn-light" onclick="toggleTheme()">🌗 Theme</button>
+        <button class="btn btn-light" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn btn-light" onclick="exportPDF()">📄 PDF</button>
+        <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
       </div>
     </aside>
 
@@ -307,137 +175,80 @@
         <div style="display:flex; gap:12px; align-items:flex-start;">
           <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
           <div>
-            <h1 class="page-title">Portal theo dõi vận động</h1>
-            <div class="page-subtitle">Lọc theo năm, quý, tháng, tuần, thành viên; xem KPI, biểu đồ, tỷ lệ tham gia và danh sách chi tiết theo tháng/tuần.</div>
+            <h1 class="page-title">Thống Nhất CR</h1>
+            <div class="page-subtitle">Hệ thống theo dõi vận động, tổng hợp KPI, thống kê tháng/tuần và quản trị theo phân quyền.</div>
           </div>
         </div>
         <div class="top-actions">
           <button class="btn btn-light" onclick="window.print()">In trang</button>
-          <button class="btn btn-success" onclick="exportCSV()">Xuất CSV chi tiết</button>
-          <button class="btn btn-primary" onclick="loadDashboard()">Tải dữ liệu</button>
+          <button class="btn btn-success" onclick="exportPDF()">Xuất PDF</button>
+          <button class="btn btn-primary" onclick="loadDashboard()">Làm mới dữ liệu</button>
         </div>
       </div>
+
+      <div id="statusBanner" class="status-banner"></div>
 
       <section class="panel filters">
         <div class="filters-header">
           <div>
-            <h2 class="section-title">Bộ lọc dashboard</h2>
-            <div class="section-sub">Bộ lọc phụ thuộc theo Năm → Quý → Tháng → Tuần và thành viên từ bảng Users.</div>
+            <h2 class="section-title">Bộ lọc dữ liệu</h2>
+            <div class="section-sub">Lọc theo năm, quý, tháng, tuần và thành viên. User thường chỉ xem dữ liệu của mình; Admin xem toàn bộ.</div>
           </div>
         </div>
 
         <div class="filter-grid">
-          <div class="field">
-            <label>Năm</label>
-            <select id="yearFilter"></select>
-          </div>
-          <div class="field">
-            <label>Quý</label>
-            <select id="quarterFilter"></select>
-          </div>
-          <div class="field">
-            <label>Tháng</label>
-            <select id="monthFilter"></select>
-          </div>
-          <div class="field">
-            <label>Tuần</label>
-            <select id="weekFilter"></select>
-          </div>
-          <div class="field">
-            <label>Thành viên</label>
-            <select id="userFilter"></select>
-          </div>
-          <div class="field">
-            <label>Tìm nhanh</label>
-            <input id="keywordFilter" type="text" placeholder="UserID, họ tên, ngày, nguồn..." />
-          </div>
+          <div class="field2"><label>Năm</label><select id="yearFilter"></select></div>
+          <div class="field2"><label>Quý</label><select id="quarterFilter"></select></div>
+          <div class="field2"><label>Tháng</label><select id="monthFilter"></select></div>
+          <div class="field2"><label>Tuần</label><select id="weekFilter"></select></div>
+          <div class="field2"><label>Thành viên</label><select id="userFilter"></select></div>
+          <div class="field2"><label>Tìm nhanh</label><input id="keywordFilter" type="text" placeholder="Họ tên, kế hoạch, mã hoạt động..." /></div>
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
           <button class="btn btn-primary" onclick="loadDashboard()">Áp dụng bộ lọc</button>
           <button class="btn btn-light" onclick="resetFilters()">Xóa lọc</button>
         </div>
+
+        <div class="quick-stats">
+          <div class="quick-chip" id="activeFilterChip">Bộ lọc: mặc định</div>
+          <div class="quick-chip" id="sessionChip">Phiên: chưa xác định</div>
+          <div class="quick-chip" id="lastSyncChip">Lần tải gần nhất: chưa có</div>
+        </div>
       </section>
 
-      <section class="kpis" style="grid-template-columns:repeat(5,1fr);">
-        <div class="panel kpi">
-          <div class="kpi-label">Tổng KM đăng ký</div>
-          <div class="kpi-value" id="sumReg">0</div>
-          <div class="kpi-foot">Tổng chỉ tiêu đã đăng ký</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Tổng KM thực tế</div>
-          <div class="kpi-value" id="sumDistance">0</div>
-          <div class="kpi-foot">Tổng quãng đường đã ghi nhận</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Số thành viên tham gia</div>
-          <div class="kpi-value" id="sumMembers">0</div>
-          <div class="kpi-foot">Số thành viên trong dữ liệu lọc</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Số bản ghi</div>
-          <div class="kpi-value" id="sumActivities">0</div>
-          <div class="kpi-foot">Tổng số dòng dữ liệu hiển thị</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Tỷ lệ hoàn thành</div>
-          <div class="kpi-value" id="sumCompletion">0%</div>
-          <div class="kpi-foot">DistanceKM / KMReg</div>
-        </div>
-
-        <div class="panel kpi">
-          <div class="kpi-label">Pace trung bình</div>
-          <div class="kpi-value" id="sumPace">00:00</div>
-          <div class="kpi-foot">Trung bình pace của dữ liệu lọc</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Tỷ lệ tham gia thực tế</div>
-          <div class="kpi-value" id="sumParticipation">0%</div>
-          <div class="kpi-foot">Thành viên có KM thực tế ≠ 0</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Tích cực &gt; 90%</div>
-          <div class="kpi-value" id="sumActive90">0</div>
-          <div class="kpi-foot">Theo số buổi trong kỳ</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Không tích cực &lt; 50%</div>
-          <div class="kpi-value" id="sumUnder50">0</div>
-          <div class="kpi-foot">Theo số buổi trong kỳ</div>
-        </div>
-        <div class="panel kpi">
-          <div class="kpi-label">Không tập / Dưỡng sức</div>
-          <div class="kpi-value" id="sumNoTrainRest">0 / 0</div>
-          <div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div>
-        </div>
+      <section class="kpis">
+        <div class="panel kpi"><div class="kpi-label">Tổng KM đăng ký</div><div class="kpi-value" id="sumReg">0</div><div class="kpi-foot">Tổng chỉ tiêu đã đăng ký</div></div>
+        <div class="panel kpi"><div class="kpi-label">Tổng KM thực tế</div><div class="kpi-value" id="sumDistance">0</div><div class="kpi-foot">Tổng quãng đường đã ghi nhận</div></div>
+        <div class="panel kpi"><div class="kpi-label">Số thành viên tham gia</div><div class="kpi-value" id="sumMembers">0</div><div class="kpi-foot">Số thành viên trong dữ liệu lọc</div></div>
+        <div class="panel kpi"><div class="kpi-label">Số bản ghi</div><div class="kpi-value" id="sumActivities">0</div><div class="kpi-foot">Tổng số dòng dữ liệu</div></div>
+        <div class="panel kpi"><div class="kpi-label">Tỷ lệ hoàn thành</div><div class="kpi-value" id="sumCompletion">0%</div><div class="kpi-foot">KM thực tế / KM đăng ký</div></div>
+        <div class="panel kpi"><div class="kpi-label">Pace trung bình</div><div class="kpi-value" id="sumPace">00:00</div><div class="kpi-foot">Pace trung bình dữ liệu lọc</div></div>
+        <div class="panel kpi"><div class="kpi-label">Tỷ lệ tham gia thực tế</div><div class="kpi-value" id="sumParticipation">0%</div><div class="kpi-foot">Thành viên có KM thực tế ≠ 0</div></div>
+        <div class="panel kpi"><div class="kpi-label">Tích cực > 90%</div><div class="kpi-value" id="sumActive90">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
+        <div class="panel kpi"><div class="kpi-label">Không tích cực < 50%</div><div class="kpi-value" id="sumUnder50">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
+        <div class="panel kpi"><div class="kpi-label">Không tập / Dưỡng sức</div><div class="kpi-value" id="sumNoTrainRest">0 / 0</div><div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div></div>
       </section>
 
       <section class="grid-2">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tháng</h2>
-          <div class="section-sub">Biểu đồ line hiển thị KM đăng ký, KM thực tế kết hợp cột hiển thị Pace trung bình theo tháng.</div>
-          <div class="chart-wrap">
-            <canvas id="monthComboChart"></canvas>
-          </div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng.</div>
+          <div class="chart-wrap"><canvas id="monthComboChart"></canvas></div>
         </div>
 
         <div class="panel chart-card">
           <h2 class="section-title">Top thành viên theo KM thực tế</h2>
           <div class="section-sub">Top 10 thành viên có tổng DistanceKM cao nhất.</div>
-          <div class="chart-wrap sm">
-            <canvas id="memberChart"></canvas>
-          </div>
+          <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
       </section>
 
       <section class="grid-1">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tuần</h2>
-          <div class="section-sub">Biểu đồ line hiển thị KM đăng ký, KM thực tế kết hợp cột hiển thị Pace trung bình theo tuần.</div>
-          <div class="chart-wrap md">
-            <canvas id="comboChart"></canvas>
-          </div>
+          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0.</div>
+          <div class="chart-wrap md"><canvas id="weekComboChart"></canvas></div>
         </div>
       </section>
 
@@ -473,75 +284,285 @@
             <tbody id="detailBody"></tbody>
           </table>
         </div>
-        <div class="footer-note">
-          Mẹo: thay <b>API_BASE</b> trong file này bằng URL Web App của Apps Script. Backend nên trả các action: <code>filters</code> và <code>dashboard</code>.
-        </div>
+        <div class="footer-note">Bản ổn định • Thống Nhất CR</div>
       </section>
     </main>
+  </section>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div id="loadingText" style="font-weight:700; margin-bottom:6px;">Đang xử lý...</div>
+      <div style="font-size:13px; color:var(--muted);">Vui lòng chờ trong giây lát</div>
+    </div>
   </div>
 
-  <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbxmQcdScK7a1HNSqQT_NuE_RK-Z42W3QB1M6Yl0mhEuDuZbnFSCBxglihDi4oPuPl5Nbg/exec';
+  <div id="toast" class="toast"></div>
 
+  <script>
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbwXYWZm0V_O0t5TVQHbE3jHWXB6Mgzsh7b4eluIaICdaWV5aHIaINAw5rZXpLupriQSbg/exec';
+
+    let currentUser = null;
     let monthComboChart = null;
     let memberChart = null;
-    let comboChart = null;
+    let weekComboChart = null;
     let detailRowsCache = [];
     let currentDetailTab = 'week';
-    let fullFilterData = {
-      years: [],
-      quarters: [],
-      months: [],
-      weeks: [],
-      users: []
-    };
+    let fullFilterData = { years: [], quarters: [], months: [], weeks: [], users: [] };
+    let eventsBound = false;
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
+    function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+    function toggleTheme(){
+      document.body.classList.toggle('dark');
+      localStorage.setItem('tncr_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    function applySavedTheme(){
+      const theme = localStorage.getItem('tncr_theme');
+      if (theme === 'dark') document.body.classList.add('dark');
     }
 
-    function apiUrl(params) {
+    function showToast(text){
+      const el = document.getElementById('toast');
+      el.textContent = text;
+      el.style.display = 'block';
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { el.style.display = 'none'; }, 2500);
+    }
+
+    function setLoading(show, text='Đang xử lý...'){
+      const overlay = document.getElementById('loadingOverlay');
+      const label = document.getElementById('loadingText');
+      label.textContent = text;
+      overlay.style.display = show ? 'flex' : 'none';
+    }
+
+    function setBanner(message='', type='info'){
+      const el = document.getElementById('statusBanner');
+      if (!message){
+        el.className = 'status-banner';
+        el.textContent = '';
+        return;
+      }
+      el.className = 'status-banner ' + type;
+      el.textContent = message;
+    }
+
+    function setLoginStatus(msg='', isError=true){
+      const el = document.getElementById('loginStatus');
+      if (!msg){
+        el.textContent = '';
+        el.style.display = 'none';
+        return;
+      }
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.style.color = isError ? 'var(--danger)' : 'var(--success)';
+      el.style.background = isError ? 'rgba(220,38,38,.06)' : 'rgba(22,163,74,.06)';
+      el.style.borderColor = isError ? 'rgba(220,38,38,.15)' : 'rgba(22,163,74,.15)';
+    }
+
+    function apiUrl(params){
       const url = new URL(API_BASE);
-      Object.entries(params).forEach(([k, v]) => {
+      Object.entries(params || {}).forEach(([k,v]) => {
         if (v !== '' && v !== null && v !== undefined) url.searchParams.set(k, v);
       });
       return url.toString();
     }
 
-    async function fetchJson(params) {
+    async function fetchJson(params){
       const res = await fetch(apiUrl(params));
-      if (!res.ok) throw new Error('Không gọi được API');
       return await res.json();
     }
 
-    function fillSelect(id, items, defaultLabel) {
-      const el = document.getElementById(id);
-      const current = el.value;
-      el.innerHTML = '';
+    async function loadLoginUsers(){
+      try{
+        const data = await fetchJson({ action:'loginusers' });
+        if (!data.ok) throw new Error(data.error || 'Không tải được danh sách thành viên');
 
-      const all = document.createElement('option');
-      all.value = '';
-      all.textContent = defaultLabel;
-      el.appendChild(all);
+        const select = document.getElementById('loginUserID');
+        select.innerHTML = '';
 
-      items.forEach(item => {
-        const opt = document.createElement('option');
-        if (typeof item === 'object') {
-          opt.value = item.value;
-          opt.textContent = item.label;
-        } else {
-          opt.value = item;
-          opt.textContent = item;
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = 'Chọn thành viên';
+        select.appendChild(first);
+
+        (data.users || []).forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.UserID || '';
+          opt.textContent = u.FullName ? `${u.FullName} (${u.UserID})` : (u.UserID || '');
+          select.appendChild(opt);
+        });
+      }catch(err){
+        console.error('LOAD LOGIN USERS ERROR:', err);
+        const select = document.getElementById('loginUserID');
+        if (select){
+          select.innerHTML = '<option value="">Không tải được danh sách thành viên</option>';
         }
-        el.appendChild(opt);
-      });
-
-      if ([...el.options].some(o => o.value === current)) el.value = current;
+        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.\n\nChi tiết lỗi:\n' + (err.message || String(err)));
+      }
     }
 
-    async function initFilters() {
+
+    function updateUxMeta(){
+      const session = localStorage.getItem('tncr_session');
+      const y = document.getElementById('yearFilter')?.value || 'Tất cả năm';
+      const q = document.getElementById('quarterFilter')?.value ? ('Quý ' + document.getElementById('quarterFilter').value) : 'Tất cả quý';
+      const m = document.getElementById('monthFilter')?.value ? ('Tháng ' + document.getElementById('monthFilter').value) : 'Tất cả tháng';
+      const w = document.getElementById('weekFilter')?.value ? ('Tuần ' + document.getElementById('weekFilter').value) : 'Tất cả tuần';
+      document.getElementById('activeFilterChip').textContent = 'Bộ lọc: ' + [y,q,m,w].join(' • ');
+      document.getElementById('sessionChip').textContent = 'Phiên: ' + (session ? 'đang hoạt động' : 'chưa đăng nhập');
+      document.getElementById('lastSyncChip').textContent = 'Lần tải gần nhất: ' + new Date().toLocaleString('vi-VN');
+    }
+
+    async function login(){
+      try{
+        setLoginStatus('');
+        setBanner('');
+        setLoading(true, 'Đang đăng nhập...');
+
+        const userId = document.getElementById('loginUserID').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!userId){
+          setLoginStatus('Vui lòng chọn thành viên.');
+          return;
+        }
+
+        const params = new URLSearchParams({
+          action: 'login',
+          userId: userId,
+          password: password
+        });
+
+        const loginUrl = `${API_BASE}?${params.toString()}`;
+        const res = await fetch(loginUrl);
+        const rawText = await res.text();
+
+        let data;
+        try{
+          data = JSON.parse(rawText);
+        }catch(err){
+          setLoginStatus(
+            'API không trả về JSON hợp lệ.\n\n' +
+            'URL gọi:\n' + loginUrl + '\n\n' +
+            'HTTP status: ' + res.status + '\n\n' +
+            'Raw response:\n' + rawText.slice(0, 1500)
+          );
+          return;
+        }
+
+        if (!data.ok){
+          setLoginStatus(
+            'Đăng nhập thất bại.\n\n' +
+            'URL gọi:\n' + loginUrl + '\n\n' +
+            'Thông báo backend:\n' + (data.error || 'Không rõ lỗi') + '\n\n' +
+            'Response JSON:\n' + JSON.stringify(data, null, 2)
+          );
+          return;
+        }
+
+        localStorage.setItem('tncr_session', data.sessionToken);
+        currentUser = data.user;
+        renderUserInfo();
+        document.getElementById('authView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+
+        setLoginStatus('Đăng nhập thành công.', false);
+        showToast('Đăng nhập thành công');
+
+        await initApp();
+      }catch(err){
+        console.error(err);
+        setLoginStatus(
+          'Lỗi kết nối frontend → API.\n\n' +
+          'Chi tiết lỗi:\n' + (err && err.message ? err.message : String(err)) + '\n\n' +
+          'Kiểm tra lại:\n' +
+          '1) API_BASE có đúng URL /exec không\n' +
+          '2) Web app đã deploy quyền Anyone chưa\n' +
+          '3) Trình duyệt có chặn request không'
+        );
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    async function restoreSession(){
+      const token = localStorage.getItem('tncr_session');
+      if (!token) return false;
+
+      try{
+        setLoading(true, 'Đang khôi phục phiên đăng nhập...');
+        const res = await fetchJson({ action:'me', sessionToken: token });
+        if (!res.ok) throw new Error(res.error || 'Session không hợp lệ');
+        currentUser = res.user;
+        document.getElementById('authView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        renderUserInfo();
+        await initApp();
+        return true;
+      }catch(err){
+        console.error('RESTORE SESSION ERROR:', err);
+        localStorage.removeItem('tncr_session');
+        return false;
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    function logout(){
+      localStorage.removeItem('tncr_session');
+      currentUser = null;
+      document.getElementById('authView').classList.remove('hidden');
+      document.getElementById('appView').classList.add('hidden');
+      setBanner('');
+      showToast('Đã đăng xuất');
+    }
+
+    function renderUserInfo(){
+      if (!currentUser) return;
+      document.getElementById('sidebarUserName').textContent = currentUser.FullName || currentUser.UserID || '-';
+      document.getElementById('sidebarUserMeta').textContent = `${currentUser.Role || 'User'} • ${currentUser.UserID || ''}`;
+    }
+
+    async function initApp(){
+      try{
+        setBanner('Đang khởi tạo dashboard...', 'info');
+        await initFilters();
+        await loadDashboard();
+        bindEvents();
+        updateUxMeta();
+        setBanner('Đã kết nối thành công với hệ thống dữ liệu.', 'info');
+      }catch(err){
+        console.error('INIT APP ERROR:', err);
+        setBanner('Đăng nhập thành công nhưng tải dashboard lỗi: ' + (err.message || String(err)), 'error');
+      }
+    }
+
+    function bindEvents(){
+      if (eventsBound) return;
+      eventsBound = true;
+      document.getElementById('yearFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('quarterFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('monthFilter').addEventListener('change', renderDependentFilters);
+      document.getElementById('keywordFilter').addEventListener('keydown', function(e){
+        if (e.key === 'Enter') loadDashboard();
+      });
+      document.getElementById('loginPassword').addEventListener('keydown', function(e){
+        if (e.key === 'Enter') login();
+      });
+      document.getElementById('loginUserID').addEventListener('keydown', function(e){
+        if (e.key === 'Enter') login();
+      });
+    }
+
+    function authParams(){
+      return { sessionToken: localStorage.getItem('tncr_session') || '' };
+    }
+
+    async function initFilters(){
       setStatus('Đang tải bộ lọc...', 'loading');
-      const data = await fetchJson({ action: 'filters' });
+      const data = await fetchJson({ action:'filters', ...authParams() });
       if (!data.ok) throw new Error(data.error || 'Không tải được filters');
 
       fullFilterData = {
@@ -553,74 +574,69 @@
       };
 
       renderDependentFilters();
-      bindFilterEvents();
+
+      if (currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID){
+        document.getElementById('userFilter').value = currentUser.UserID;
+        document.getElementById('userFilter').disabled = true;
+      }
       setStatus('Đã tải bộ lọc', 'ok');
     }
 
-    function bindFilterEvents() {
-      document.getElementById('yearFilter').addEventListener('change', renderDependentFilters);
-      document.getElementById('quarterFilter').addEventListener('change', renderDependentFilters);
-      document.getElementById('monthFilter').addEventListener('change', renderDependentFilters);
-      document.getElementById('keywordFilter').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') loadDashboard();
+    function fillSelect(id, items, defaultLabel){
+      const el = document.getElementById(id);
+      const current = el.value;
+      el.innerHTML = '';
+      const all = document.createElement('option');
+      all.value = '';
+      all.textContent = defaultLabel;
+      el.appendChild(all);
+
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        if (typeof item === 'object'){
+          opt.value = item.value;
+          opt.textContent = item.label;
+        }else{
+          opt.value = item;
+          opt.textContent = item;
+        }
+        el.appendChild(opt);
       });
+
+      if ([...el.options].some(o => o.value === current)) el.value = current;
     }
 
-    function renderDependentFilters() {
+    function renderDependentFilters(){
       const y = Number(document.getElementById('yearFilter').value || 0);
       const q = Number(document.getElementById('quarterFilter').value || 0);
       const m = Number(document.getElementById('monthFilter').value || 0);
 
-      fillSelect(
-        'yearFilter',
-        fullFilterData.years,
-        'Tất cả năm'
-      );
-
-      fillSelect(
-        'quarterFilter',
-        fullFilterData.quarters.map(q => ({ value: q, label: 'Quý ' + q })),
-        'Tất cả quý'
-      );
+      fillSelect('yearFilter', fullFilterData.years, 'Tất cả năm');
+      fillSelect('quarterFilter', fullFilterData.quarters.map(x => ({ value:x, label:'Quý ' + x })), 'Tất cả quý');
 
       let months = [...fullFilterData.months];
       if (q) months = months.filter(x => Math.ceil(Number(x) / 3) === q);
+      fillSelect('monthFilter', months.map(x => ({ value:x, label:'Tháng ' + x })), 'Tất cả tháng');
 
-      fillSelect(
-        'monthFilter',
-        months.map(m => ({ value: m, label: 'Tháng ' + m })),
-        'Tất cả tháng'
-      );
+      let weeks = [...fullFilterData.weeks].filter(x => Number(x) !== 0);
+      fillSelect('weekFilter', weeks.map(x => ({ value:x, label:'Tuần ' + x })), 'Tất cả tuần');
 
-      let weeks = [...fullFilterData.weeks];
-      if (m) {
-        // Với cấu trúc backend hiện tại chỉ có WeekNum độc lập.
-        // Giữ week là toàn bộ nếu không có API mapping tháng-tuần chi tiết.
-        weeks = [...fullFilterData.weeks];
-      } else if (q || y) {
-        weeks = [...fullFilterData.weeks];
-      }
-
-      fillSelect(
-        'weekFilter',
-        weeks.map(w => ({ value: w, label: 'Tuần ' + w })),
-        'Tất cả tuần'
-      );
-
-      fillSelect(
-        'userFilter',
-        fullFilterData.users.map(u => ({ value: u.UserID, label: u.Label || (u.UserID + ' - ' + (u.FullName || '')) })),
-        'Tất cả thành viên'
-      );
+      const users = fullFilterData.users.map(u => ({ value:u.UserID, label:u.Label || (u.UserID + ' - ' + (u.FullName || '')) }));
+      fillSelect('userFilter', users, 'Tất cả thành viên');
 
       if (y) document.getElementById('yearFilter').value = String(y);
       if (q) document.getElementById('quarterFilter').value = String(q);
       if (m) document.getElementById('monthFilter').value = String(m);
+
+      if (currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID){
+        document.getElementById('userFilter').value = currentUser.UserID;
+      }
     }
 
-    function currentFilters() {
+    function currentFilters(){
       return {
-        action: 'dashboard',
+        action:'dashboard',
+        sessionToken: localStorage.getItem('tncr_session') || '',
         year: document.getElementById('yearFilter').value,
         quarter: document.getElementById('quarterFilter').value,
         month: document.getElementById('monthFilter').value,
@@ -630,9 +646,11 @@
       };
     }
 
-    async function loadDashboard() {
-      try {
+    async function loadDashboard(){
+      try{
         setStatus('Đang tải dữ liệu dashboard...', 'loading');
+        setBanner('Đang đồng bộ dữ liệu dashboard...', 'info');
+
         const data = await fetchJson(currentFilters());
         if (!data.ok) throw new Error(data.error || 'Không tải được dashboard');
 
@@ -640,19 +658,21 @@
         renderSummary(data.summary || {}, detailRowsCache);
         renderMonthComboChart(detailRowsCache);
         renderMemberChart((data.charts && data.charts.byMember) || []);
-        renderComboChart(detailRowsCache);
-        renderDetails(detailRowsCache);
-        document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(data.totalRows || detailRowsCache.length)} bản ghi phù hợp bộ lọc hiện tại.`;
+        renderWeekComboChart(detailRowsCache);
         switchDetailTab(currentDetailTab);
+        document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(data.totalRows || detailRowsCache.length)} bản ghi phù hợp bộ lọc hiện tại.`;
+        updateUxMeta();
         setStatus('Đã tải dữ liệu thành công', 'ok');
-      } catch (err) {
+        setBanner('Dữ liệu đã được cập nhật thành công.', 'info');
+      }catch(err){
         console.error(err);
         setStatus('Lỗi tải dữ liệu', 'error');
-        alert(err.message || 'Có lỗi khi tải dữ liệu');
+        setBanner('Không tải được dữ liệu dashboard: ' + (err.message || String(err)), 'error');
+        showToast('Không tải được dữ liệu');
       }
     }
 
-    function renderSummary(s, rows) {
+    function renderSummary(s, rows){
       document.getElementById('sumReg').textContent = formatNumber(s.totalReg || 0);
       document.getElementById('sumDistance').textContent = formatNumber(s.totalDistance || 0);
       document.getElementById('sumMembers').textContent = formatNumber(s.totalMembers || 0);
@@ -664,219 +684,110 @@
       document.getElementById('sumParticipation').textContent = formatNumber(stats.participationRate) + '%';
       document.getElementById('sumActive90').textContent = formatNumber(stats.active90Count);
       document.getElementById('sumUnder50').textContent = formatNumber(stats.under50Count);
-      document.getElementById('sumNoTrainRest').textContent = formatNumber(stats.noTrainingCount) + ' / ' + formatNumber(stats.restCount);
+      document.getElementById('sumNoTrainRest').textContent = `${formatNumber(stats.noTrainingCount)} / ${formatNumber(stats.restCount)}`;
     }
 
-    function renderMonthComboChart(rows) {
+    function renderMonthComboChart(rows){
       const monthMap = {};
-
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
         if (!key) return;
-
-        if (!monthMap[key]) {
-          monthMap[key] = {
-            label: 'T' + key,
-            RegKM: 0,
-            DistanceKM: 0,
-            paceSum: 0,
-            paceCount: 0
-          };
-        }
-
+        if (!monthMap[key]) monthMap[key] = { label:'T' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0 };
         monthMap[key].RegKM += Number(r.KMReg || 0);
         monthMap[key].DistanceKM += Number(r.DistanceKM || 0);
-
-        if (Number(r.PaceSeconds || 0) > 0) {
+        if (Number(r.PaceSeconds || 0) > 0){
           monthMap[key].paceSum += Number(r.PaceSeconds || 0);
           monthMap[key].paceCount += 1;
         }
       });
 
-      const rowsAgg = Object.keys(monthMap)
-        .map(k => {
-          const item = monthMap[k];
-          return {
-            label: item.label,
-            RegKM: item.RegKM,
-            DistanceKM: item.DistanceKM,
-            PaceMin: item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
-            sortNum: Number(k)
-          };
-        })
-        .sort((a, b) => a.sortNum - b.sortNum);
+      const rowsAgg = Object.keys(monthMap).map(k => {
+        const item = monthMap[k];
+        return { label:item.label, RegKM:item.RegKM, DistanceKM:item.DistanceKM, PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0, sortNum:Number(k) };
+      }).sort((a,b) => a.sortNum - b.sortNum);
 
       const ctx = document.getElementById('monthComboChart');
       if (monthComboChart) monthComboChart.destroy();
-
       monthComboChart = new Chart(ctx, {
         data: {
           labels: rowsAgg.map(x => x.label),
           datasets: [
-            {
-              type: 'line',
-              label: 'KM đăng ký',
-              data: rowsAgg.map(x => x.RegKM),
-              tension: .35,
-              yAxisID: 'y'
-            },
-            {
-              type: 'line',
-              label: 'KM thực tế',
-              data: rowsAgg.map(x => x.DistanceKM),
-              tension: .35,
-              yAxisID: 'y'
-            },
-            {
-              type: 'bar',
-              label: 'Pace TB (phút/km)',
-              data: rowsAgg.map(x => x.PaceMin),
-              borderRadius: 8,
-              yAxisID: 'y1'
-            }
+            { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+            { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+            { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { position: 'top' } },
-          scales: {
-            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'KM' } },
-            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Phút/km' } }
+          responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+          plugins:{ legend:{ position:'top' } },
+          scales:{
+            y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
+            y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
           }
         }
       });
     }
 
-    function renderMemberChart(rows) {
+    function renderMemberChart(rows){
       const ctx = document.getElementById('memberChart');
       if (memberChart) memberChart.destroy();
-
       memberChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: rows.map(x => x.label),
-          datasets: [{
-            label: 'KM thực tế',
-            data: rows.map(x => x.DistanceKM),
-            borderRadius: 8
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            x: { beginAtZero: true }
-          }
-        }
+        type:'bar',
+        data:{ labels: rows.map(x => x.label), datasets:[{ label:'KM thực tế', data:rows.map(x => x.DistanceKM), borderRadius:8 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
       });
     }
 
-    function renderComboChart(rows) {
+    function renderWeekComboChart(rows){
       const weekMap = {};
-
-      rows.forEach(r => {
+      (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
         if (!key) return;
-        if (!weekMap[key]) {
-          weekMap[key] = {
-            label: 'W' + key,
-            RegKM: 0,
-            DistanceKM: 0,
-            paceSum: 0,
-            paceCount: 0
-          };
-        }
+        if (!weekMap[key]) weekMap[key] = { label:'W' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0 };
         weekMap[key].RegKM += Number(r.KMReg || 0);
         weekMap[key].DistanceKM += Number(r.DistanceKM || 0);
-        if (Number(r.PaceSeconds || 0) > 0) {
+        if (Number(r.PaceSeconds || 0) > 0){
           weekMap[key].paceSum += Number(r.PaceSeconds || 0);
           weekMap[key].paceCount += 1;
         }
       });
 
-      const rowsAgg = Object.keys(weekMap)
-        .map(k => {
-          const item = weekMap[k];
-          return {
-            label: item.label,
-            RegKM: item.RegKM,
-            DistanceKM: item.DistanceKM,
-            PaceMin: item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
-            sortNum: Number(k)
-          };
-        })
-        .sort((a,b) => a.sortNum - b.sortNum);
+      const rowsAgg = Object.keys(weekMap).map(k => {
+        const item = weekMap[k];
+        return { label:item.label, RegKM:item.RegKM, DistanceKM:item.DistanceKM, PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0, sortNum:Number(k) };
+      }).sort((a,b) => a.sortNum - b.sortNum);
 
-      const ctx = document.getElementById('comboChart');
-      if (comboChart) comboChart.destroy();
-
-      comboChart = new Chart(ctx, {
+      const ctx = document.getElementById('weekComboChart');
+      if (weekComboChart) weekComboChart.destroy();
+      weekComboChart = new Chart(ctx, {
         data: {
           labels: rowsAgg.map(x => x.label),
           datasets: [
-            {
-              type: 'line',
-              label: 'KM đăng ký',
-              data: rowsAgg.map(x => x.RegKM),
-              tension: .35,
-              yAxisID: 'y'
-            },
-            {
-              type: 'line',
-              label: 'KM thực tế',
-              data: rowsAgg.map(x => x.DistanceKM),
-              tension: .35,
-              yAxisID: 'y'
-            },
-            {
-              type: 'bar',
-              label: 'Pace TB (phút/km)',
-              data: rowsAgg.map(x => x.PaceMin),
-              borderRadius: 8,
-              yAxisID: 'y1'
-            }
+            { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+            { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+            { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { position: 'top' } },
-          scales: {
-            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'KM' } },
-            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Phút/km' } }
+          responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+          plugins:{ legend:{ position:'top' } },
+          scales:{
+            y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
+            y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
           }
         }
       });
     }
 
-    function buildParticipationStats(rows) {
+    function buildParticipationStats(rows){
       const memberMap = {};
-
       rows.forEach(r => {
         const key = String(r.FullName || '').trim() || ('USER_' + String(r.UserID || ''));
-        if (!memberMap[key]) {
-          memberMap[key] = {
-            name: key,
-            totalSessions: 0,
-            positiveSessions: 0,
-            hasActual: false,
-            noTrainingOnly: false,
-            restOnly: false,
-            rows: []
-          };
-        }
+        if (!memberMap[key]) memberMap[key] = { totalSessions:0, positiveSessions:0, hasActual:false, rows:[] };
         const kmReg = Number(r.KMReg || 0);
         const kmActual = Number(r.DistanceKM || 0);
-
         memberMap[key].totalSessions += 1;
-        if (kmActual !== 0) {
+        if (kmActual !== 0){
           memberMap[key].positiveSessions += 1;
           memberMap[key].hasActual = true;
         }
@@ -884,48 +795,39 @@
       });
 
       const members = Object.values(memberMap);
-      members.forEach(m => {
-        m.noTrainingOnly = m.rows.some(x => x.kmReg !== 0 && x.kmActual === 0) && !m.rows.some(x => x.kmActual !== 0);
-        m.restOnly = m.rows.every(x => x.kmReg === 0);
-      });
-
-      const totalMembers = members.length || 0;
+      const totalMembers = members.length;
       const participationCount = members.filter(m => m.hasActual).length;
       const active90Count = members.filter(m => m.totalSessions > 0 && (m.positiveSessions / m.totalSessions) > 0.9).length;
       const under50Count = members.filter(m => m.totalSessions > 0 && (m.positiveSessions / m.totalSessions) < 0.5).length;
-      const noTrainingCount = members.filter(m => m.noTrainingOnly).length;
-      const restCount = members.filter(m => m.restOnly).length;
+      const noTrainingCount = members.filter(m => m.rows.some(x => x.kmReg !== 0 && x.kmActual === 0) && !m.rows.some(x => x.kmActual !== 0)).length;
+      const restCount = members.filter(m => m.rows.every(x => x.kmReg === 0)).length;
 
       return {
-        participationRate: totalMembers ? +(participationCount / totalMembers * 100).toFixed(2) : 0,
-        active90Count,
-        under50Count,
-        noTrainingCount,
-        restCount
+        participationRate: totalMembers ? +((participationCount / totalMembers) * 100).toFixed(2) : 0,
+        active90Count, under50Count, noTrainingCount, restCount
       };
     }
 
-    function switchDetailTab(tab) {
+    function switchDetailTab(tab){
       currentDetailTab = tab;
       document.getElementById('tabMonthBtn').className = 'btn ' + (tab === 'month' ? 'btn-primary' : 'btn-light');
       document.getElementById('tabWeekBtn').className = 'btn ' + (tab === 'week' ? 'btn-primary' : 'btn-light');
       renderDetails(detailRowsCache);
     }
 
-    function renderDetails(rows) {
+    function renderDetails(rows){
       const tbody = document.getElementById('detailBody');
       tbody.innerHTML = '';
 
       const filteredRows = (rows || []).filter(r => {
         const id = String(r.ActivityID || '').toUpperCase();
         const weekNum = Number(r.WeekNum || 0);
-        return currentDetailTab === 'month'
-          ? id.indexOf('M') > -1
-          : (id.indexOf('W') > -1 && weekNum !== 0);
+        return currentDetailTab === 'month' ? id.includes('M') : (id.includes('W') && weekNum !== 0);
       });
 
-      if (!filteredRows.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="center muted" style="padding:18px;">Không có dữ liệu phù hợp.</td></tr>';
+      if (!filteredRows.length){
+        tbody.innerHTML = '<tr><td colspan="10" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
+        document.getElementById('detailMeta').textContent = 'Không có dữ liệu phù hợp ở tab hiện tại.';
         return;
       }
 
@@ -942,13 +844,7 @@
           <td class="right">${formatNumber(kmReg)}</td>
           <td class="right">${formatNumber(kmActual)}</td>
           <td class="right">${formatNumber(completion)}%</td>
-          <td class="center">
-            ${reached
-              ? '<span class="pill ok">Đạt</span>'
-              : zero
-                ? '<span class="pill zero">0 KM</span>'
-                : '<span class="pill">Chưa đạt</span>'}
-          </td>
+          <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
           <td>${escapeHtml(r.Pace || '')}</td>
           <td class="center">${escapeHtml(String(r.Year || ''))}</td>
           <td class="center">${escapeHtml(String(r.Quarter || ''))}</td>
@@ -961,49 +857,56 @@
       document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber(filteredRows.length)} bản ghi ở tab ${currentDetailTab === 'month' ? 'tháng (M)' : 'tuần (W)'}.`;
     }
 
-    function exportCSV() {
-      if (!detailRowsCache.length) {
-        alert('Không có dữ liệu để xuất CSV.');
+    function exportCSV(){
+      if (!detailRowsCache.length){
+        showToast('Không có dữ liệu để xuất CSV');
         return;
       }
 
-      const headers = [
-        'FullName','KMReg','DistanceKM','CompletionRate','Pace','Year','Quarter','MonthNum','WeekNum','ActivityID'
-      ];
+      const rows = detailRowsCache.filter(r => currentDetailTab === 'month'
+        ? String(r.ActivityID || '').toUpperCase().includes('M')
+        : (String(r.ActivityID || '').toUpperCase().includes('W') && Number(r.WeekNum || 0) !== 0));
 
+      const headers = ['FullName','KMReg','DistanceKM','CompletionRate','Pace','Year','Quarter','MonthNum','WeekNum','ActivityID'];
       const csv = [
         headers.join(','),
-        ...detailRowsCache
-          .filter(r => currentDetailTab === 'month'
-            ? String(r.ActivityID || '').toUpperCase().includes('M')
-            : (String(r.ActivityID || '').toUpperCase().includes('W') && Number(r.WeekNum || 0) !== 0))
-          .map(r => {
-            const obj = Object.assign({}, r, {
-              CompletionRate: Number(r.KMReg || 0) > 0 ? ((Number(r.DistanceKM || 0) / Number(r.KMReg || 0)) * 100).toFixed(2) + '%' : '0%'
-            });
-            return headers.map(h => csvCell(obj[h])).join(',');
-          })
+        ...rows.map(r => {
+          const obj = { ...r, CompletionRate: Number(r.KMReg || 0) > 0 ? ((Number(r.DistanceKM || 0) / Number(r.KMReg || 0)) * 100).toFixed(2) + '%' : '0%' };
+          return headers.map(h => csvCell(obj[h])).join(',');
+        })
       ].join('\n');
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const stamp = new Date();
-      const fileName = `dashboard_detail_${stamp.getFullYear()}${String(stamp.getMonth()+1).padStart(2,'0')}${String(stamp.getDate()).padStart(2,'0')}.csv`;
       a.href = url;
-      a.download = fileName;
+      a.download = `thong_nhat_cr_${currentDetailTab}_${new Date().toISOString().slice(0,10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
 
-    function csvCell(v) {
+    function exportPDF(){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+      doc.setFontSize(16);
+      doc.text('Thống Nhất CR - Báo cáo Dashboard', 14, 16);
+      doc.setFontSize(10);
+      doc.text(`Người dùng: ${(currentUser && (currentUser.FullName || currentUser.UserID)) || '-'}`, 14, 24);
+      doc.text(`Thời gian xuất: ${new Date().toLocaleString('vi-VN')}`, 14, 30);
+      doc.text(`Tổng KM đăng ký: ${document.getElementById('sumReg').textContent}`, 14, 40);
+      doc.text(`Tổng KM thực tế: ${document.getElementById('sumDistance').textContent}`, 14, 46);
+      doc.text(`Tỷ lệ hoàn thành: ${document.getElementById('sumCompletion').textContent}`, 14, 52);
+      doc.save(`thong_nhat_cr_report_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
+    function csvCell(v){
       const s = String(v ?? '');
       return '"' + s.replaceAll('"', '""') + '"';
     }
 
-    function setStatus(text, type) {
+    function setStatus(text, type){
       const pill = document.getElementById('statusPill');
       pill.textContent = text;
       pill.className = 'pill';
@@ -1011,42 +914,42 @@
       if (type === 'error') pill.classList.add('zero');
     }
 
-    function resetFilters() {
+    function resetFilters(){
       document.getElementById('yearFilter').value = '';
       document.getElementById('quarterFilter').value = '';
       document.getElementById('monthFilter').value = '';
       document.getElementById('weekFilter').value = '';
-      document.getElementById('userFilter').value = '';
+      if (!(currentUser && String(currentUser.Role || '').toLowerCase() !== 'admin' && currentUser.UserID)){
+        document.getElementById('userFilter').value = '';
+      }
       document.getElementById('keywordFilter').value = '';
       renderDependentFilters();
+      updateUxMeta();
       loadDashboard();
     }
 
-    function formatNumber(n) {
+    function formatNumber(n){
       return Number(n || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 });
     }
 
-    function escapeHtml(str) {
+    function escapeHtml(str){
       return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
     }
 
-    function escapeAttribute(str) {
-      return String(str).replace(/"/g, '&quot;');
-    }
-
-    (async function boot() {
-      try {
-        await initFilters();
-        await loadDashboard();
-      } catch (err) {
-        console.error(err);
-        setStatus('Lỗi khởi tạo', 'error');
-        alert('Khởi tạo dashboard thất bại. Kiểm tra lại API_BASE và backend Apps Script.');
+    (async function boot(){
+      applySavedTheme();
+      bindEvents();
+      await loadLoginUsers();
+      const ok = await restoreSession();
+      if (!ok){
+        document.getElementById('authView').classList.remove('hidden');
+        document.getElementById('appView').classList.add('hidden');
+        setBanner('');
       }
     })();
   </script>
