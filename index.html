@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thống Nhất CR</title>
+  <title>Thống Nhất CR</title><!-- v17 stable login-fixed -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -102,6 +102,57 @@
     .loading-card{min-width:260px;max-width:90vw;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:20px;padding:22px 20px;text-align:center}
     .spinner{width:42px;height:42px;border:4px solid rgba(148,163,184,.25);border-top-color:var(--primary);border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .field select{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 14px;outline:none}
+    .field select:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(15,118,110,.12)}
+    .top-actions .btn,.login-actions .btn,.detail-tools .btn,.sidebar-actions .btn{touch-action:manipulation}
+    .table-wrap{-webkit-overflow-scrolling:touch}
+    .detail-tools > div:last-child{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .filters .filter-grid{grid-auto-rows:minmax(44px,auto)}
+    .compare-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px}
+    @media (max-width:1200px){
+      .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .grid-2{grid-template-columns:1fr}
+      .chart-wrap,.chart-wrap.md{height:320px}
+      .compare-grid{grid-template-columns:repeat(2,minmax(160px,1fr))}
+    }
+    @media (max-width:900px){
+      .main{padding:18px}
+      .page-title{font-size:26px}
+      .topbar{align-items:stretch}
+      .top-actions{width:100%}
+      .top-actions .btn{flex:1 1 140px}
+      .filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      .compare-grid{grid-template-columns:1fr}
+      .detail-tools{flex-direction:column;align-items:stretch}
+      .detail-tools > div:last-child{justify-content:flex-start}
+      .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:640px){
+      .auth-shell{padding:14px}
+      .login-card{width:100%;border-radius:22px}
+      .login-top{padding:20px 18px 14px}
+      .login-body{padding:18px}
+      .brand-name{font-size:20px}
+      .brand-desc{font-size:12px}
+      .main{padding:12px}
+      .page-title{font-size:22px}
+      .page-subtitle{font-size:13px}
+      .top-actions{gap:8px}
+      .top-actions .btn,.login-actions .btn{flex:1 1 calc(50% - 8px)}
+      .login-actions{display:grid;grid-template-columns:1fr 1fr}
+      .filter-grid{grid-template-columns:1fr!important}
+      .kpis{grid-template-columns:1fr}
+      .chart-wrap,.chart-wrap.md{height:280px}
+      .detail-tools > div:last-child{gap:8px}
+      .detail-tools .btn{flex:1 1 calc(50% - 8px)}
+      .quick-stats{gap:8px}
+      .quick-chip{font-size:11px;padding:7px 9px}
+      table{min-width:820px}
+      thead th, tbody td{padding:10px 8px;font-size:13px}
+      .sidebar-actions{display:grid;grid-template-columns:1fr 1fr}
+      .sidebar-actions .btn{width:100%}
+    }
+
     @media (max-width:1400px){.filter-grid{grid-template-columns:repeat(4,1fr)}.kpis{grid-template-columns:repeat(3,1fr)}}
     @media (max-width:1100px){.app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:20;width:min(86vw,320px);transform:translateX(-100%);transition:transform .25s ease}.sidebar.open{transform:translateX(0)}.mobile-toggle{display:inline-flex;align-items:center;justify-content:center}.grid-2{grid-template-columns:1fr}}
     @media (max-width:768px){.main{padding:16px}.filter-grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.page-title{font-size:24px}.kpi-value{font-size:24px}}
@@ -179,7 +230,7 @@
             <div class="page-subtitle">Hệ thống theo dõi vận động, tổng hợp KPI, thống kê tháng/tuần và tối ưu tải dữ liệu.</div>
           </div>
         </div>
-        <div class="top-actions">
+        <div class="top-actions" role="group" aria-label="Thao tác nhanh">
           <button class="btn btn-light" onclick="window.print()">In trang</button>
           <button class="btn btn-success" onclick="exportPDF()">Xuất PDF</button>
           <button class="btn btn-primary" onclick="loadDashboard()">Làm mới dữ liệu</button>
@@ -237,7 +288,7 @@
             <div class="section-sub">Line KM thực tế của tài khoản đăng nhập được làm nổi bật. Có thể chọn thêm tối đa 3 thành viên để so sánh trên biểu đồ tháng/tuần.</div>
           </div>
         </div>
-        <div class="filter-grid" style="grid-template-columns:repeat(3,minmax(180px,1fr));">
+        <div class="compare-grid">
           <div class="field2">
             <label>So sánh 1</label>
             <select id="compareUser1"></select>
@@ -262,7 +313,7 @@
 
         <div class="panel chart-card">
           <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
-          <div class="section-sub">Top 10 thành viên theo bộ lọc hiện tại, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
+          <div class="section-sub">Top 10 thành viên toàn hệ, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
           <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
       </section>
@@ -281,7 +332,7 @@
             <h2 class="section-title" style="margin-bottom:4px;">Danh sách chi tiết</h2>
             <div class="detail-meta" id="detailMeta">Đang tải dữ liệu...</div>
           </div>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div>
             <button class="btn btn-light" id="tabMonthBtn" onclick="switchDetailTab('month')">Thành tích cá nhân</button>
             <button class="btn btn-primary" id="tabWeekBtn" onclick="switchDetailTab('week')">Danh sách</button>
             <button class="btn btn-light" id="tabTop10Btn" onclick="switchDetailTab('top10')">Top 10</button>
@@ -336,6 +387,8 @@
   <div id="toast" class="toast"></div>
 
   <script>
+    const FALLBACK_LOGIN_USERS = [{"UserID": "U007", "FullName": "Đỗ Võ Công Nguyên", "Role": "User"}, {"UserID": "U022", "FullName": "Hà Thị Thanh Vân", "Role": "User"}, {"UserID": "U008", "FullName": "Hồ Quốc Cường", "Role": "User"}, {"UserID": "U003", "FullName": "Huỳnh Công Một", "Role": "User"}, {"UserID": "U010", "FullName": "Huỳnh Quốc Vũ", "Role": "User"}, {"UserID": "U021", "FullName": "Lê Bích Ngọc", "Role": "User"}, {"UserID": "U018", "FullName": "Lê Đức Anh", "Role": "Out"}, {"UserID": "U005", "FullName": "Lê Thị Kiều Oanh", "Role": "User"}, {"UserID": "U028", "FullName": "Lê Thị Kim Oanh", "Role": "User"}, {"UserID": "U019", "FullName": "Lê Trầm Ngọc Dũng", "Role": "User"}, {"UserID": "U044", "FullName": "Lê Tuấn Anh", "Role": "User"}, {"UserID": "U002", "FullName": "Lê Văn Bình", "Role": "User"}, {"UserID": "U024", "FullName": "Lê Văn Lâm", "Role": "Out"}, {"UserID": "U011", "FullName": "Lê Xuân Cương", "Role": "User"}, {"UserID": "U029", "FullName": "Lưu Vĩnh Tiến", "Role": "Out"}, {"UserID": "U023", "FullName": "Ngô Kiến Đức", "Role": "User"}, {"UserID": "U032", "FullName": "Nguyễn Bá Hà", "Role": "Out"}, {"UserID": "U025", "FullName": "Nguyễn Hữu Nghị", "Role": "User"}, {"UserID": "U033", "FullName": "Nguyễn Ngô Thị Thanh Hường", "Role": "User"}, {"UserID": "U001", "FullName": "Nguyễn Quang Vinh", "Role": "Admin"}, {"UserID": "U020", "FullName": "Nguyễn Thị Hải Yến", "Role": "User"}, {"UserID": "U012", "FullName": "Nguyễn Văn Tài", "Role": "Admin"}, {"UserID": "U027", "FullName": "Phạm Quang Nhật", "Role": "User"}, {"UserID": "U030", "FullName": "Phạm Thị Thu Hiền", "Role": "User"}, {"UserID": "U015", "FullName": "Phạm Vũ Lin", "Role": "User"}, {"UserID": "U016", "FullName": "Phan Cảnh Pháp", "Role": "User"}, {"UserID": "U017", "FullName": "Phan Tiểu Trâm", "Role": "User"}, {"UserID": "U026", "FullName": "Phan Trọng Nghĩa", "Role": "User"}, {"UserID": "U014", "FullName": "Tô Xuân Tiệp", "Role": "User"}, {"UserID": "U031", "FullName": "Trần Thị Phương Mai", "Role": "User"}, {"UserID": "U013", "FullName": "Trần Trung Kiên", "Role": "User"}, {"UserID": "U006", "FullName": "Trương Hoàng Việt", "Role": "User"}, {"UserID": "U004", "FullName": "Võ Thành Toàn", "Role": "Admin"}, {"UserID": "U009", "FullName": "Vũ Đức Doanh", "Role": "User"}];
+
     const API_BASE = 'https://script.google.com/macros/s/AKfycbxtY7xB-GRukY7fsmHhkCd5An5Zga5h4BEpcamfuhLM9hoOpLgJuy80oc1XUoX-M1l_Sw/exec';
 
     let currentUser = null;
@@ -357,6 +410,7 @@
 
     let currentDetailTab = 'week';
     let fullFilterData = { years: [], quarters: [], months: [], weeks: [], users: [] };
+    let allUsersDirectory = [];
     let eventsBound = false;
 
     const apiCache = new Map();
@@ -445,10 +499,10 @@
     }
 
     async function loadLoginUsers(){
-      try{
-        const data = await fetchJson({ action:'loginusers' });
-        if (!data.ok) throw new Error(data.error || 'Không tải được danh sách thành viên');
-        const select = document.getElementById('loginUserID');
+      const select = document.getElementById('loginUserID');
+
+      function renderUsers(list){
+        allUsersDirectory = list || [];
         if (!select) return;
         select.innerHTML = '';
 
@@ -457,17 +511,30 @@
         first.textContent = 'Chọn thành viên';
         select.appendChild(first);
 
-        (data.users || []).forEach(u => {
+        (allUsersDirectory || []).forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.UserID || '';
           opt.textContent = u.FullName ? `${u.FullName} (${u.UserID})` : (u.UserID || '');
           select.appendChild(opt);
         });
+      }
+
+      try{
+        const data = await fetchJson({ action:'loginusers' }, false);
+        if (!data.ok || !Array.isArray(data.users) || !data.users.length){
+          throw new Error(data.error || 'Danh sách thành viên rỗng');
+        }
+        renderUsers(data.users);
+        setLoginStatus('');
       }catch(err){
         console.error('LOAD LOGIN USERS ERROR:', err);
-        const select = document.getElementById('loginUserID');
-        if (select) select.innerHTML = '<option value="">Không tải được danh sách thành viên</option>';
-        setLoginStatus('Không tải được danh sách thành viên từ sheet Users.\n\nChi tiết lỗi:\n' + (err.message || String(err)));
+        renderUsers(FALLBACK_LOGIN_USERS);
+setLoginStatus(
+          'Không tải được danh sách thành viên trực tiếp từ API.\n\n' +
+          'Đã chuyển sang danh sách dự phòng để vẫn đăng nhập được.\n\n' +
+          'Chi tiết lỗi:\n' + (err.message || String(err)),
+          true
+        );
       }
     }
 
@@ -484,7 +551,7 @@
     }
     function populateCompareSelectors(){
       const ids = ['compareUser1','compareUser2','compareUser3'];
-      const users = (fullFilterData.users || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
+      const users = (allUsersDirectory || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
 
       ids.forEach((id, idx) => {
         const el = document.getElementById(id);
@@ -501,7 +568,7 @@
         users.forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.UserID || '';
-          opt.textContent = u.Label || ((u.FullName || '') + (u.UserID ? ' (' + u.UserID + ')' : ''));
+          opt.textContent = (u.FullName || u.UserID || '') + (u.UserID ? ` (${u.UserID})` : '');
           el.appendChild(opt);
         });
 
@@ -813,8 +880,8 @@
         setBanner('Đang đồng bộ dữ liệu dashboard...', 'info');
 
         const filters = currentFilters();
-        const filtersAllMembers = Object.assign({}, filters, { userId: '' });
-        const chartFilters = Object.assign({}, filters, { month: '', week: '', userId: '' });
+        const filtersAllMembers = Object.assign({}, filters, { action: 'dashboardglobal', userId: '' });
+        const chartFilters = Object.assign({}, filters, { action: 'dashboardglobal', month: '', week: '', userId: '' });
 
         const [dataMain, dataAllMembers, dataCharts] = await Promise.all([
           fetchJson(filters, false),
@@ -833,7 +900,7 @@
 
         renderSummary(dataMain.summary || {}, detailRowsCache);
         renderMonthComboChart(chartRowsCache);
-        renderMemberChart(detailRowsCache);
+        renderMemberChart(detailRowsAllMembersCache);
         renderWeekComboChart(chartRowsCache);
         switchDetailTab(currentDetailTab);
 
@@ -1023,7 +1090,7 @@
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByMonth(rows, uid) }));
       const compareLabels = {};
-      (fullFilterData.users || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
+      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
@@ -1136,7 +1203,7 @@
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByWeek(rows, uid) }));
       const compareLabels = {};
-      (fullFilterData.users || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
+      (allUsersDirectory || []).forEach(u => { compareLabels[String(u.UserID || '')] = u.FullName || u.UserID || ''; });
 
       (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
