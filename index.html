@@ -112,6 +112,10 @@
     .detail-tools > div:last-child{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .filters .filter-grid{grid-auto-rows:minmax(44px,auto)}
     .compare-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px}
+
+    .overview-section.is-hidden{display:none!important}
+    #sectionChartsPrimary .chart-card,#sectionChartsSecondary .chart-card,#sectionDetails{min-width:0}
+    #sectionChartsPrimary canvas,#sectionChartsSecondary canvas{max-width:100%}
     @media (max-width:1200px){
       .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
       .grid-2{grid-template-columns:1fr}
@@ -214,9 +218,9 @@
       </div>
 
       <div class="menu-title">Tổng quan</div>
-      <div class="menu-item active"><span class="menu-dot"></span><span>Dashboard điều hành</span></div>
-      <div class="menu-item"><span class="menu-dot"></span><span>Biểu đồ tháng / tuần</span></div>
-      <div class="menu-item"><span class="menu-dot"></span><span>Chi tiết tháng / tuần</span></div>
+      <div class="menu-item active" data-nav-section="dashboard"><span class="menu-dot"></span><span>Dashboard điều hành</span></div>
+      <div class="menu-item" data-nav-section="charts"><span class="menu-dot"></span><span>Biểu đồ tháng / tuần</span></div>
+      <div class="menu-item" data-nav-section="details"><span class="menu-dot"></span><span>Chi tiết tháng / tuần</span></div>
 
       <div class="sidebar-actions">
         <button class="btn btn-light" onclick="toggleTheme()">🌗 Theme</button>
@@ -244,7 +248,7 @@
 
       <div id="statusBanner" class="status-banner"></div>
 
-      <section class="panel filters">
+      <section id="sectionDashboard" class="panel filters overview-section" data-overview-section="dashboard">
         <div class="filters-header">
           <div>
             <h2 class="section-title">Bộ lọc dữ liệu</h2>
@@ -272,7 +276,7 @@
         </div>
       </section>
 
-      <section class="kpis">
+      <section id="sectionKpis" class="kpis overview-section" data-overview-section="dashboard">
         <div class="panel kpi"><div class="kpi-label">Tổng KM đăng ký</div><div class="kpi-value" id="sumReg">0</div><div class="kpi-foot">Tổng chỉ tiêu đã đăng ký</div></div>
         <div class="panel kpi"><div class="kpi-label">Tổng KM thực tế</div><div class="kpi-value" id="sumDistance">0</div><div class="kpi-foot">Tổng quãng đường đã ghi nhận</div></div>
         <div class="panel kpi"><div class="kpi-label">Số thành viên tham gia</div><div class="kpi-value" id="sumMembers">0</div><div class="kpi-foot">Số thành viên trong dữ liệu lọc</div></div>
@@ -286,7 +290,7 @@
       </section>
 
       
-      <section id="compareSection" class="panel filters" style="padding:14px 18px; margin-top:-6px; margin-bottom:18px;">
+      <section id="compareSection" class="panel filters overview-section" style="padding:14px 18px; margin-top:-6px; margin-bottom:18px;">
         <div class="filters-header" style="margin-bottom:10px;">
           <div>
             <h2 class="section-title">So sánh người dùng trên biểu đồ</h2>
@@ -309,7 +313,7 @@
         </div>
       </section>
 
-      <section class="grid-2">
+      <section id="sectionChartsPrimary" class="grid-2 overview-section" data-overview-section="charts">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tháng</h2>
           <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; thêm line KM thực tế của user đăng nhập.</div>
@@ -323,7 +327,7 @@
         </div>
       </section>
 
-      <section class="grid-1">
+      <section id="sectionChartsSecondary" class="grid-1 overview-section" data-overview-section="charts">
         <div class="panel chart-card">
           <h2 class="section-title">KM và Pace theo tuần</h2>
           <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; thêm line KM thực tế của user đăng nhập.</div>
@@ -331,7 +335,7 @@
         </div>
       </section>
 
-      <section class="panel detail-card">
+      <section id="sectionDetails" class="panel detail-card overview-section" data-overview-section="details">
         <div class="detail-tools">
           <div>
             <h2 class="section-title" style="margin-bottom:4px;">Danh sách chi tiết</h2>
@@ -516,8 +520,20 @@
         }
       }
 
-      const res = await fetch(url);
-      const data = await res.json();
+      const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+      const rawText = await res.text();
+
+      let data;
+      try{
+        data = JSON.parse(rawText);
+      }catch(err){
+        throw new Error(
+          'API không trả JSON hợp lệ. ' +
+          'URL: ' + url +
+          ' | HTTP status: ' + res.status +
+          ' | Response đầu: ' + rawText.slice(0, 500)
+        );
+      }
 
       if (useCache) {
         apiCache.set(url, { ts: now, data });
@@ -759,6 +775,7 @@ setLoginStatus(
         applyRoleUi();
         await loadDashboard();
         bindEvents();
+        showOverviewSection('dashboard');
         updateUxMeta();
         setBanner('Đã kết nối thành công với hệ thống dữ liệu.', 'info');
       }catch(err){
@@ -788,9 +805,9 @@ setLoginStatus(
       window.addEventListener('resize', function(){
         if (!isMobileSidebar()) closeSidebar();
       });
-      document.querySelectorAll('.menu-item').forEach(function(item){
+      document.querySelectorAll('.menu-item[data-nav-section]').forEach(function(item){
         item.addEventListener('click', function(){
-          if (isMobileSidebar()) closeSidebar();
+          showOverviewSection(item.getAttribute('data-nav-section') || 'dashboard');
         });
       });
     }
@@ -801,10 +818,30 @@ setLoginStatus(
       return ['admin','superadmin','manager'].includes(role);
     }
 
+    function isUserRole(){
+      const role = String((currentUser && currentUser.Role) || '').toLowerCase();
+      return role === 'user';
+    }
+
+    function getVisibleOverviewDatasetMode(){
+      return isUserRole() ? 'user_only' : 'all';
+    }
+
+    function showOverviewSection(sectionKey){
+      const target = String(sectionKey || 'dashboard');
+      document.querySelectorAll('[data-overview-section]').forEach(el => {
+        el.classList.toggle('is-hidden', el.getAttribute('data-overview-section') !== target);
+      });
+      document.querySelectorAll('.menu-item[data-nav-section]').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-nav-section') === target);
+      });
+      if (isMobileSidebar()) closeSidebar();
+    }
+
     function applyRoleUi(){
       const compareSection = document.getElementById('compareSection');
       if (compareSection){
-        compareSection.style.display = '';
+        compareSection.style.display = isUserRole() ? 'none' : '';
       }
 
       const top10Btn = document.getElementById('tabTop10Btn');
@@ -979,6 +1016,129 @@ setLoginStatus(
       return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
     }
 
+    function getPaceMinutesFromRow(row){
+      if (!row) return 0;
+      return parsePaceToMinutes(row.Pace);
+    }
+
+    function hasActivityToken(row, token){
+      const activityId = String((row && row.ActivityID) || '').toUpperCase();
+      return activityId.includes(String(token || '').toUpperCase());
+    }
+
+    function buildExactWeekActivityId(yearValue, weekNum, userId){
+      const y = String(yearValue || '').trim();
+      const w = Number(weekNum || 0);
+      const uid = String(userId || '').trim().toUpperCase();
+      if (!y || !w || !uid) return '';
+      return `${y}W${w}-${uid}`.toUpperCase();
+    }
+
+    function getSelectedYearForRow(row){
+      const selectedYear = String(document.getElementById('yearFilter')?.value || '').trim();
+      if (selectedYear) return selectedYear;
+      const rowYear = String((row && row.Year) || '').trim();
+      return rowYear || '';
+    }
+
+    function isExactWeekActivity(row, yearValue='', userId=''){
+      const activityId = String((row && row.ActivityID) || '').trim().toUpperCase();
+      const weekNum = Number((row && row.WeekNum) || 0);
+      const resolvedYear = String(yearValue || getSelectedYearForRow(row) || '').trim();
+      const resolvedUserId = String(userId || (row && row.UserID) || '').trim().toUpperCase();
+      const expectedId = buildExactWeekActivityId(resolvedYear, weekNum, resolvedUserId);
+      return !!expectedId && activityId === expectedId;
+    }
+
+    function getDisplayedPersonalWeekRows(rows, userId=''){
+      const targetUserId = String(userId || '').trim().toUpperCase();
+      const selectedYear = String(document.getElementById('yearFilter')?.value || '').trim();
+      return (rows || []).filter(r => {
+        const weekNum = Number(r.WeekNum || 0);
+        if (!weekNum) return false;
+        if (targetUserId && String(r.UserID || '').trim().toUpperCase() !== targetUserId) return false;
+        if (!hasActivityToken(r, 'W')) return false;
+        if (selectedYear && String(r.Year || '').trim() && String(r.Year).trim() !== selectedYear) return false;
+        return true;
+      });
+    }
+
+    function buildWeekPaceMapFromW(rows, userId=''){
+      const targetUserId = String(userId || '').trim();
+      const weekMap = {};
+      (rows || []).forEach(r => {
+        const weekNum = Number(r.WeekNum || 0);
+        if (!weekNum || !hasActivityToken(r, 'W')) return;
+        if (targetUserId && String(r.UserID || '').trim() !== targetUserId) return;
+        const paceMin = getPaceMinutesFromRow(r);
+        if (paceMin <= 0) return;
+        if (!weekMap[weekNum]) weekMap[weekNum] = [];
+        weekMap[weekNum].push(paceMin);
+      });
+      Object.keys(weekMap).forEach(k => {
+        const arr = weekMap[k] || [];
+        weekMap[k] = arr.length ? +(arr.reduce((s,x)=>s+x,0) / arr.length).toFixed(2) : 0;
+      });
+      return weekMap;
+    }
+
+    function buildWeekPaceMapFromPersonalRows(rows, userId=''){
+      const displayedRows = getDisplayedPersonalWeekRows(rows, userId);
+      const exactMap = {};
+      const fallbackMap = {};
+      const selectedYear = String(document.getElementById('yearFilter')?.value || '').trim();
+
+      displayedRows.forEach(r => {
+        const weekNum = Number(r.WeekNum || 0);
+        const paceMin = getPaceMinutesFromRow(r);
+        if (!weekNum || paceMin <= 0) return;
+
+        if (isExactWeekActivity(r, selectedYear, userId)) {
+          if (exactMap[weekNum] === undefined) exactMap[weekNum] = +paceMin.toFixed(2);
+          return;
+        }
+
+        if (fallbackMap[weekNum] === undefined) {
+          fallbackMap[weekNum] = +paceMin.toFixed(2);
+        }
+      });
+
+      return Object.assign({}, fallbackMap, exactMap);
+    }
+
+    function buildMonthPaceMap(rows, userId=''){
+      const targetUserId = String(userId || '').trim();
+      const monthMap = {};
+      const weekPaceMap = buildWeekPaceMapFromW(rows, targetUserId);
+
+      (rows || []).forEach(r => {
+        const monthNum = Number(r.MonthNum || 0);
+        if (!monthNum) return;
+        if (targetUserId && String(r.UserID || '').trim() !== targetUserId) return;
+        if (!monthMap[monthNum]) monthMap[monthNum] = { mPaces: [], weekNums: new Set() };
+
+        if (hasActivityToken(r, 'M')) {
+          const paceMin = getPaceMinutesFromRow(r);
+          if (paceMin > 0) monthMap[monthNum].mPaces.push(paceMin);
+        }
+
+        const weekNum = Number(r.WeekNum || 0);
+        if (weekNum) monthMap[monthNum].weekNums.add(weekNum);
+      });
+
+      const result = {};
+      Object.keys(monthMap).forEach(k => {
+        const item = monthMap[k];
+        if (item.mPaces.length) {
+          result[k] = +(item.mPaces.reduce((s,x)=>s+x,0) / item.mPaces.length).toFixed(2);
+          return;
+        }
+        const weekly = Array.from(item.weekNums).map(wn => Number(weekPaceMap[wn] || 0)).filter(x => x > 0);
+        result[k] = weekly.length ? +(weekly.reduce((s,x)=>s+x,0) / weekly.length).toFixed(2) : 0;
+      });
+      return result;
+    }
+
     function buildMemberAggregates(rows){
       const map = {};
       (rows || []).forEach(r => {
@@ -1002,7 +1162,7 @@ setLoginStatus(
         }
         const kmReg = Number(r.KMReg || 0);
         const kmActual = Number(r.DistanceKM || 0);
-        const paceMin = Number(r.PaceSeconds || 0) > 0 ? +(Number(r.PaceSeconds || 0) / 60).toFixed(2) : parsePaceToMinutes(r.Pace);
+        const paceMin = getPaceMinutesFromRow(r);
         const weekNum = Number(r.WeekNum || 0);
 
         map[key].KMReg += kmReg;
@@ -1098,8 +1258,9 @@ setLoginStatus(
       memberAggMainCache = buildMemberAggregates(detailRowsCache || []);
       memberAggAllCache = buildMemberAggregates(detailRowsAllMembersCache || []);
       currentUserPersonalRowsCache = (detailRowsCache || [])
-        .filter(r => String(r.UserID || '') === String((currentUser && currentUser.UserID) || ''))
-        .filter(r => Number(r.WeekNum || 0) !== 0);
+        .filter(r => String(r.UserID || '').trim().toUpperCase() === String((currentUser && currentUser.UserID) || '').trim().toUpperCase())
+        .filter(r => Number(r.WeekNum || 0) !== 0)
+        .filter(r => hasActivityToken(r, 'W'));
 
       currentUserActiveRateMapCache = {};
       buildMemberAggregates(currentUserPersonalRowsCache).forEach(x => {
@@ -1113,7 +1274,9 @@ setLoginStatus(
       document.getElementById('sumMembers').textContent = formatNumber(s.totalMembers || 0);
       document.getElementById('sumActivities').textContent = formatNumber(s.totalActivities || 0);
       document.getElementById('sumCompletion').textContent = formatNumber(s.completionRate || 0) + '%';
-      document.getElementById('sumPace').textContent = s.avgPaceText || '00:00';
+      const paceRows = (rows || []).map(getPaceMinutesFromRow).filter(x => x > 0);
+      const avgPace = paceRows.length ? (paceRows.reduce((sum, x) => sum + x, 0) / paceRows.length) : 0;
+      document.getElementById('sumPace').textContent = avgPace > 0 ? minuteToPaceText(avgPace) : '00:00';
 
       const stats = buildParticipationStats(rows || []);
       document.getElementById('sumParticipation').textContent = formatNumber(stats.participationRate) + '%';
@@ -1125,6 +1288,7 @@ setLoginStatus(
     function renderMonthComboChart(rows){
       const monthMap = {};
       const currentUserId = String((currentUser && currentUser.UserID) || '');
+      const monthPaceMap = buildMonthPaceMap(rows, currentUserId);
       const currentUserMap = buildUserSeriesByMonth(rows, currentUserId);
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByMonth(rows, uid) }));
@@ -1134,13 +1298,9 @@ setLoginStatus(
       (rows || []).forEach(r => {
         const key = Number(r.MonthNum || 0);
         if (!key) return;
-        if (!monthMap[key]) monthMap[key] = { label:'T' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0, sortNum:key };
+        if (!monthMap[key]) monthMap[key] = { label:'T' + key, RegKM:0, DistanceKM:0, sortNum:key };
         monthMap[key].RegKM += Number(r.KMReg || 0);
         monthMap[key].DistanceKM += Number(r.DistanceKM || 0);
-        if (Number(r.PaceSeconds || 0) > 0){
-          monthMap[key].paceSum += Number(r.PaceSeconds || 0);
-          monthMap[key].paceCount += 1;
-        }
       });
 
       const rowsAgg = Object.keys(monthMap).map(k => {
@@ -1150,16 +1310,19 @@ setLoginStatus(
           RegKM:item.RegKM,
           DistanceKM:item.DistanceKM,
           UserDistanceKM: Number(currentUserMap[item.sortNum] || 0),
-          PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+          PaceMin:Number(monthPaceMap[item.sortNum] || 0),
           sortNum:Number(k)
         };
       }).sort((a,b) => a.sortNum - b.sortNum);
 
+      const datasetMode = getVisibleOverviewDatasetMode();
       const datasets = [
-        { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
-        { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+        ...(datasetMode === 'all' ? [
+          { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+          { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' }
+        ] : []),
         { type:'line', label:'KM thực tế của tôi', data:rowsAgg.map(x => x.UserDistanceKM), tension:.35, yAxisID:'y', borderColor:'#dc2626', backgroundColor:'#dc2626', borderWidth:4, pointRadius:4, pointHoverRadius:5 },
-        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
+        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1', backgroundColor:'rgba(96, 165, 250, 0.28)', borderColor:'rgba(96, 165, 250, 0.45)', borderWidth:1, categoryPercentage:0.72, barPercentage:0.82, maxBarThickness:34 }
       ];
 
       compareMaps.forEach((cm, idx) => {
@@ -1182,9 +1345,20 @@ setLoginStatus(
       monthComboChart = new Chart(ctx, {
         data: { labels: rowsAgg.map(x => x.label), datasets },
         options: {
-          responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
-          plugins:{ legend:{ position:'top' } },
+          responsive:true,
+          maintainAspectRatio:false,
+          resizeDelay:120,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{ legend:{ position:'top', labels:{ boxWidth:14, usePointStyle:true } } },
           scales:{
+            x:{
+              ticks:{
+                autoSkip:false,
+                maxRotation: window.innerWidth <= 768 ? 45 : 0,
+                minRotation: 0,
+                font:{ size: window.innerWidth <= 768 ? 10 : 12 }
+              }
+            },
             y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
             y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
           }
@@ -1211,23 +1385,43 @@ setLoginStatus(
               label:'KM thực tế',
               data:data.map(x => +(x.DistanceKM || 0).toFixed(2)),
               borderRadius:8,
-              yAxisID:'y'
+              yAxisID:'y',
+              backgroundColor:'rgba(15, 118, 110, 0.75)',
+              borderColor:'rgba(15, 118, 110, 0.95)',
+              borderWidth:1,
+              categoryPercentage:0.7,
+              barPercentage:0.8,
+              maxBarThickness:36
             },
             {
               type:'line',
               label:'Pace TB (phút/km)',
               data:data.map(x => +(x.PaceAvg || 0).toFixed(2)),
               tension:.35,
-              yAxisID:'y1'
+              yAxisID:'y1',
+              borderColor:'rgba(96, 165, 250, 0.95)',
+              backgroundColor:'rgba(96, 165, 250, 0.18)',
+              borderWidth:3,
+              pointRadius:3,
+              pointHoverRadius:4
             }
           ]
         },
         options:{
           responsive:true,
           maintainAspectRatio:false,
+          resizeDelay:120,
           interaction:{ mode:'index', intersect:false },
-          plugins:{ legend:{ position:'top' } },
+          plugins:{ legend:{ position:'top', labels:{ boxWidth:14, usePointStyle:true } } },
           scales:{
+            x:{
+              ticks:{
+                autoSkip:false,
+                maxRotation: window.innerWidth <= 768 ? 45 : 0,
+                minRotation: 0,
+                font:{ size: window.innerWidth <= 768 ? 10 : 12 }
+              }
+            },
             y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
             y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
           }
@@ -1238,6 +1432,7 @@ setLoginStatus(
     function renderWeekComboChart(rows){
       const weekMap = {};
       const currentUserId = String((currentUser && currentUser.UserID) || '');
+      const weekPaceMap = buildWeekPaceMapFromPersonalRows(currentUserPersonalRowsCache || [], currentUserId);
       const currentUserMap = buildUserSeriesByWeek(rows, currentUserId);
       const compareIds = getSelectedCompareUsers();
       const compareMaps = compareIds.map(uid => ({ uid, map: buildUserSeriesByWeek(rows, uid) }));
@@ -1247,13 +1442,9 @@ setLoginStatus(
       (rows || []).forEach(r => {
         const key = Number(r.WeekNum || 0);
         if (!key) return;
-        if (!weekMap[key]) weekMap[key] = { label:'W' + key, RegKM:0, DistanceKM:0, paceSum:0, paceCount:0, sortNum:key };
+        if (!weekMap[key]) weekMap[key] = { label:'W' + key, RegKM:0, DistanceKM:0, sortNum:key };
         weekMap[key].RegKM += Number(r.KMReg || 0);
         weekMap[key].DistanceKM += Number(r.DistanceKM || 0);
-        if (Number(r.PaceSeconds || 0) > 0){
-          weekMap[key].paceSum += Number(r.PaceSeconds || 0);
-          weekMap[key].paceCount += 1;
-        }
       });
 
       const rowsAgg = Object.keys(weekMap).map(k => {
@@ -1263,16 +1454,19 @@ setLoginStatus(
           RegKM:item.RegKM,
           DistanceKM:item.DistanceKM,
           UserDistanceKM: Number(currentUserMap[item.sortNum] || 0),
-          PaceMin:item.paceCount ? +(item.paceSum / item.paceCount / 60).toFixed(2) : 0,
+          PaceMin:Number(weekPaceMap[item.sortNum] || 0),
           sortNum:Number(k)
         };
       }).sort((a,b) => a.sortNum - b.sortNum);
 
+      const datasetMode = getVisibleOverviewDatasetMode();
       const datasets = [
-        { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
-        { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' },
+        ...(datasetMode === 'all' ? [
+          { type:'line', label:'KM đăng ký', data:rowsAgg.map(x => x.RegKM), tension:.35, yAxisID:'y' },
+          { type:'line', label:'KM thực tế', data:rowsAgg.map(x => x.DistanceKM), tension:.35, yAxisID:'y' }
+        ] : []),
         { type:'line', label:'KM thực tế của tôi', data:rowsAgg.map(x => x.UserDistanceKM), tension:.35, yAxisID:'y', borderColor:'#dc2626', backgroundColor:'#dc2626', borderWidth:4, pointRadius:4, pointHoverRadius:5 },
-        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1' }
+        { type:'bar', label:'Pace TB (phút/km)', data:rowsAgg.map(x => x.PaceMin), borderRadius:8, yAxisID:'y1', backgroundColor:'rgba(96, 165, 250, 0.28)', borderColor:'rgba(96, 165, 250, 0.45)', borderWidth:1, categoryPercentage:0.72, barPercentage:0.82, maxBarThickness:34 }
       ];
 
       compareMaps.forEach((cm, idx) => {
@@ -1295,9 +1489,20 @@ setLoginStatus(
       weekComboChart = new Chart(ctx, {
         data: { labels: rowsAgg.map(x => x.label), datasets },
         options: {
-          responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
-          plugins:{ legend:{ position:'top' } },
+          responsive:true,
+          maintainAspectRatio:false,
+          resizeDelay:120,
+          interaction:{ mode:'index', intersect:false },
+          plugins:{ legend:{ position:'top', labels:{ boxWidth:14, usePointStyle:true } } },
           scales:{
+            x:{
+              ticks:{
+                autoSkip:false,
+                maxRotation: window.innerWidth <= 768 ? 45 : 0,
+                minRotation: 0,
+                font:{ size: window.innerWidth <= 768 ? 10 : 12 }
+              }
+            },
             y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
             y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, title:{ display:true, text:'Phút/km' } }
           }
@@ -1367,7 +1572,7 @@ setLoginStatus(
       let isRawList = false;
 
       if (currentDetailTab === 'month') {
-        filteredRows = currentUserPersonalRowsCache || [];
+        filteredRows = getDisplayedPersonalWeekRows(currentUserPersonalRowsCache || [], (currentUser && currentUser.UserID) || '');
         isRawList = true;
       } else if (currentDetailTab === 'week') {
         filteredRows = memberAggMain.sort((a,b)=>b.DistanceKM-a.DistanceKM);
