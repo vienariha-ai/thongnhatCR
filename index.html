@@ -116,6 +116,20 @@
     .overview-section.is-hidden{display:none!important}
     #sectionChartsPrimary .chart-card,#sectionChartsSecondary .chart-card,#sectionDetails{min-width:0}
     #sectionChartsPrimary canvas,#sectionChartsSecondary canvas{max-width:100%}
+
+    .sticky-top-panel{position:sticky;top:12px;z-index:30}
+    .collapsible-header-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:8px 12px;border-radius:12px;font-weight:700;cursor:pointer}
+    .collapsible-body.is-collapsed{display:none}
+    .panel-collapsible .filters-header{margin-bottom:10px}
+    .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .chart-actions{display:flex;gap:8px;align-items:center}
+    .chart-toggle-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:8px 12px;font-weight:700;cursor:pointer}
+    .chart-card.is-maximized{position:fixed;inset:16px;z-index:1400;overflow:auto}
+    .chart-card.is-maximized .chart-wrap,.chart-card.is-maximized .chart-wrap.md{height:calc(100vh - 180px)!important}
+    body.chart-max-open{overflow:hidden}
+    #sectionChartsPrimary{grid-template-columns:1fr 2fr}
+    @media (max-width:1200px){#sectionChartsPrimary{grid-template-columns:1fr}}
+
     @media (max-width:1200px){
       .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
       .grid-2{grid-template-columns:1fr}
@@ -248,13 +262,15 @@
 
       <div id="statusBanner" class="status-banner"></div>
 
-      <section id="sectionDashboard" class="panel filters overview-section" data-overview-section="dashboard">
+      <section id="sectionDashboard" class="panel filters overview-section panel-collapsible sticky-top-panel" data-overview-section="dashboard">
         <div class="filters-header">
           <div>
             <h2 class="section-title">Bộ lọc dữ liệu</h2>
             <div class="section-sub">Lọc theo năm, quý, tháng và tuần. Các quyền truy cập khác vẫn được giữ nguyên theo cấu hình hiện tại.</div>
           </div>
+          <button class="collapsible-header-btn" type="button" id="toggleFilterSectionBtn" onclick="toggleCollapsible('sectionDashboardBody', this)">Thu gọn</button>
         </div>
+        <div id="sectionDashboardBody" class="collapsible-body">
 
         <div class="filter-grid">
           <div class="field2"><label>Năm</label><select id="yearFilter"></select></div>
@@ -274,6 +290,7 @@
           <div class="quick-chip" id="sessionChip">Phiên: chưa xác định</div>
           <div class="quick-chip" id="lastSyncChip">Lần tải gần nhất: chưa có</div>
         </div>
+        </div>
       </section>
 
       <section id="sectionKpis" class="kpis overview-section" data-overview-section="dashboard">
@@ -290,13 +307,15 @@
       </section>
 
       
-      <section id="compareSection" class="panel filters overview-section" style="padding:14px 18px; margin-top:-6px; margin-bottom:18px;">
+      <section id="compareSection" class="panel filters overview-section panel-collapsible sticky-top-panel" style="padding:14px 18px; margin-top:-6px; margin-bottom:18px;">
         <div class="filters-header" style="margin-bottom:10px;">
           <div>
             <h2 class="section-title">So sánh người dùng trên biểu đồ</h2>
             <div class="section-sub">Line KM thực tế của tài khoản đăng nhập được làm nổi bật. Có thể chọn thêm tối đa 3 thành viên để so sánh trên biểu đồ tháng/tuần.</div>
           </div>
+          <button class="collapsible-header-btn" type="button" id="toggleCompareSectionBtn" onclick="toggleCollapsible('compareSectionBody', this)">Thu gọn</button>
         </div>
+        <div id="compareSectionBody" class="collapsible-body">
         <div class="compare-grid">
           <div class="field2">
             <label>So sánh 1</label>
@@ -311,26 +330,48 @@
             <select id="compareUser3"></select>
           </div>
         </div>
+        </div>
       </section>
 
       <section id="sectionChartsPrimary" class="grid-2 overview-section" data-overview-section="charts">
-        <div class="panel chart-card">
-          <h2 class="section-title">KM và Pace theo tháng</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; thêm line KM thực tế của user đăng nhập.</div>
-          <div class="chart-wrap"><canvas id="monthComboChart"></canvas></div>
+        <div class="panel chart-card" id="memberChartCard">
+          <div class="chart-head">
+            <div>
+              <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
+              <div class="section-sub">Top 10 thành viên toàn hệ, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-toggle-btn" type="button" id="memberChartToggleBtn" onclick="toggleChartCard('memberChartCard', this)">Phóng to</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
         </div>
 
-        <div class="panel chart-card">
-          <h2 class="section-title">Top thành viên theo KM thực tế và Pace</h2>
-          <div class="section-sub">Top 10 thành viên toàn hệ, hiển thị đồng thời KM thực tế và Pace trung bình.</div>
-          <div class="chart-wrap"><canvas id="memberChart"></canvas></div>
+        <div class="panel chart-card" id="monthChartCard">
+          <div class="chart-head">
+            <div>
+              <h2 class="section-title">KM và Pace theo tháng</h2>
+              <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tháng; thêm line KM thực tế của user đăng nhập.</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-toggle-btn" type="button" id="monthChartToggleBtn" onclick="toggleChartCard('monthChartCard', this)">Phóng to</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="monthComboChart"></canvas></div>
         </div>
       </section>
 
       <section id="sectionChartsSecondary" class="grid-1 overview-section" data-overview-section="charts">
-        <div class="panel chart-card">
-          <h2 class="section-title">KM và Pace theo tuần</h2>
-          <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; thêm line KM thực tế của user đăng nhập.</div>
+        <div class="panel chart-card" id="weekChartCard">
+          <div class="chart-head">
+            <div>
+              <h2 class="section-title">KM và Pace theo tuần</h2>
+              <div class="section-sub">Line hiển thị KM đăng ký, KM thực tế; cột hiển thị Pace trung bình theo tuần, tự bỏ qua WeekNum = 0; thêm line KM thực tế của user đăng nhập.</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-toggle-btn" type="button" id="weekChartToggleBtn" onclick="toggleChartCard('weekChartCard', this)">Phóng to</button>
+            </div>
+          </div>
           <div class="chart-wrap md"><canvas id="weekComboChart"></canvas></div>
         </div>
       </section>
@@ -364,6 +405,7 @@
           <table>
             <thead>
               <tr>
+                <th class="center">Rank</th>
                 <th>Họ tên</th>
                 <th class="right">KM đăng ký</th>
                 <th class="right">KM thực tế</th>
@@ -838,6 +880,62 @@ setLoginStatus(
       if (isMobileSidebar()) closeSidebar();
     }
 
+
+    function getCurrentPeriodDefaults(){
+      const now = new Date();
+      const year = String(now.getFullYear());
+      const monthNum = now.getMonth() + 1;
+      const quarter = String(Math.floor((monthNum - 1) / 3) + 1);
+      return { year, quarter, month: String(monthNum), week: '' };
+    }
+
+    function applyDefaultFilters(force=false){
+      const defaults = getCurrentPeriodDefaults();
+      const y = document.getElementById('yearFilter');
+      const q = document.getElementById('quarterFilter');
+      const m = document.getElementById('monthFilter');
+      const w = document.getElementById('weekFilter');
+      if (y && (force || !y.value) && [...y.options].some(o => o.value === defaults.year)) y.value = defaults.year;
+      if (q && (force || !q.value) && [...q.options].some(o => o.value === defaults.quarter)) q.value = defaults.quarter;
+      renderDependentFilters();
+      if (m && (force || !m.value) && [...m.options].some(o => o.value === defaults.month)) m.value = defaults.month;
+      if (w && (force || !w.value)) w.value = '';
+    }
+
+    function toggleCollapsible(bodyId, btnEl){
+      const body = document.getElementById(bodyId);
+      if (!body) return;
+      body.classList.toggle('is-collapsed');
+      if (btnEl) btnEl.textContent = body.classList.contains('is-collapsed') ? 'Mở rộng' : 'Thu gọn';
+      setTimeout(() => {
+        if (monthComboChart) monthComboChart.resize();
+        if (memberChart) memberChart.resize();
+        if (weekComboChart) weekComboChart.resize();
+      }, 50);
+    }
+
+    function toggleChartCard(cardId, btnEl){
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const isMax = card.classList.toggle('is-maximized');
+      document.body.classList.toggle('chart-max-open', isMax);
+      if (btnEl) btnEl.textContent = isMax ? 'Thu gọn' : 'Phóng to';
+      setTimeout(() => {
+        if (monthComboChart) monthComboChart.resize();
+        if (memberChart) memberChart.resize();
+        if (weekComboChart) weekComboChart.resize();
+      }, 80);
+    }
+
+    function buildRankMap(items){
+      const map = {};
+      (items || []).forEach((item, idx) => {
+        const key = String(item.UserID || item.FullName || idx);
+        if (!(key in map)) map[key] = idx + 1;
+      });
+      return map;
+    }
+
     function applyRoleUi(){
       const compareSection = document.getElementById('compareSection');
       if (compareSection){
@@ -888,6 +986,7 @@ setLoginStatus(
       };
 
       renderDependentFilters();
+      applyDefaultFilters(true);
 
       populateCompareSelectors();
       setStatus('Đã tải bộ lọc', 'ok');
@@ -1602,57 +1701,60 @@ setLoginStatus(
       const tbody = document.getElementById('detailBody');
       tbody.innerHTML = '';
 
-      const mainRows = rows || [];
-      const memberAggMain = memberAggMainCache || [];
-      const memberAggAll = memberAggAllCache || [];
+      const memberAggMain = (memberAggMainCache || []).slice();
+      const memberAggAll = (memberAggAllCache || []).slice();
 
       let filteredRows = [];
       let isRawList = false;
 
       if (currentDetailTab === 'month') {
-        filteredRows = getDisplayedPersonalWeekRows(currentUserPersonalRowsCache || [], (currentUser && currentUser.UserID) || '');
+        filteredRows = getDisplayedPersonalWeekRows(currentUserPersonalRowsCache || [], (currentUser && currentUser.UserID) || '')
+          .slice()
+          .sort((a,b)=>Number(b.DistanceKM || 0) - Number(a.DistanceKM || 0));
         isRawList = true;
       } else if (currentDetailTab === 'week') {
         filteredRows = memberAggMain.sort((a,b)=>b.DistanceKM-a.DistanceKM);
       } else if (currentDetailTab === 'top10') {
         filteredRows = memberAggAll.sort((a,b)=>b.DistanceKM-a.DistanceKM).slice(0,10);
       } else if (currentDetailTab === 'active') {
-        filteredRows = memberAggAll.filter(x => x.type === 'active').sort((a,b)=>b.AttendanceRate-a.AttendanceRate);
+        filteredRows = memberAggAll.filter(x => x.type === 'active').sort((a,b)=>b.DistanceKM-a.DistanceKM);
       } else if (currentDetailTab === 'inactive') {
-        filteredRows = memberAggAll.filter(x => x.type === 'inactive').sort((a,b)=>a.AttendanceRate-b.AttendanceRate);
+        filteredRows = memberAggAll.filter(x => x.type === 'inactive').sort((a,b)=>b.DistanceKM-a.DistanceKM);
       } else if (currentDetailTab === 'no_train') {
-        filteredRows = memberAggAll.filter(x => x.type === 'no_train').sort((a,b)=>b.KMReg-a.KMReg);
+        filteredRows = memberAggAll.filter(x => x.type === 'no_train').sort((a,b)=>b.DistanceKM-a.DistanceKM);
       } else if (currentDetailTab === 'rest') {
-        filteredRows = memberAggAll.filter(x => x.type === 'rest');
+        filteredRows = memberAggAll.filter(x => x.type === 'rest').sort((a,b)=>b.DistanceKM-a.DistanceKM);
       }
 
-      if (currentDetailTab === 'month'){
-        updateDetailTotals(buildMemberAggregates(filteredRows));
-      } else if (isRawList){
+      if (isRawList){
         updateDetailTotals(buildMemberAggregates(filteredRows));
       } else {
         updateDetailTotals(filteredRows || []);
       }
 
       if (!filteredRows.length){
-        tbody.innerHTML = '<tr><td colspan="11" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="center" style="padding:18px;color:var(--muted)">Không có dữ liệu phù hợp.</td></tr>';
         document.getElementById('detailMeta').textContent = 'Không có dữ liệu phù hợp ở tab hiện tại.';
         return;
       }
 
+      const rankMap = buildRankMap(filteredRows);
+
       if (currentDetailTab === 'month'){
         const activeMap = currentUserActiveRateMapCache || {};
 
-        filteredRows.forEach(r => {
+        filteredRows.forEach((r, idx) => {
           const kmReg = Number(r.KMReg || 0);
           const kmActual = Number(r.DistanceKM || 0);
           const completion = kmReg > 0 ? (kmActual / kmReg) * 100 : 0;
           const reached = kmReg > 0 && kmActual >= kmReg;
           const zero = kmActual === 0;
           const activeRateText = activeMap[String(r.UserID || '')] || '0.00% (0/0)';
+          const rank = rankMap[String(r.UserID || r.FullName || idx)] || (idx + 1);
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
+            <td class="center">${rank}</td>
             <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
             <td class="right">${formatNumber(kmReg)}</td>
             <td class="right">${formatNumber(kmActual)}</td>
@@ -1668,7 +1770,7 @@ setLoginStatus(
           tbody.appendChild(tr);
         });
       } else {
-        filteredRows.forEach(r => {
+        filteredRows.forEach((r, idx) => {
           const kmReg = Number(r.KMReg || 0);
           const kmActual = Number(r.DistanceKM || 0);
           const completion = Number(r.CompletionRate || 0);
@@ -1676,9 +1778,11 @@ setLoginStatus(
           const zero = kmActual === 0;
           const paceText = r.PaceText || '';
           const activeRateText = r.ActiveRateText || '0.00% (0/0)';
+          const rank = rankMap[String(r.UserID || r.FullName || idx)] || (idx + 1);
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
+            <td class="center">${rank}</td>
             <td>${escapeHtml(r.FullName || r.UserID || '')}</td>
             <td class="right">${formatNumber(kmReg)}</td>
             <td class="right">${formatNumber(kmActual)}</td>
@@ -1686,10 +1790,10 @@ setLoginStatus(
             <td class="center">${reached ? '<span class="pill ok">Đạt</span>' : (zero ? '<span class="pill zero">0 KM</span>' : '<span class="pill">Chưa đạt</span>')}</td>
             <td>${escapeHtml(paceText)}</td>
             <td class="right">${escapeHtml(activeRateText)}</td>
-            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
-            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
-            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
-            <td class="center">${currentDetailTab === 'week' ? '—' : '—'}</td>
+            <td class="center">—</td>
+            <td class="center">—</td>
+            <td class="center">—</td>
+            <td class="center">—</td>
           `;
           tbody.appendChild(tr);
         });
@@ -1771,6 +1875,7 @@ setLoginStatus(
       document.getElementById('weekFilter').value = '';
       document.getElementById('keywordFilter').value = '';
       renderDependentFilters();
+      applyDefaultFilters(true);
       updateUxMeta();
       loadDashboard();
     }
@@ -1792,6 +1897,12 @@ setLoginStatus(
       applySavedTheme();
       bindEvents();
       await loadLoginUsers();
+      const compareBody = document.getElementById('compareSectionBody');
+      if (compareBody && !compareBody.classList.contains('is-collapsed')) {
+        compareBody.classList.add('is-collapsed');
+        const btn = document.getElementById('toggleCompareSectionBtn');
+        if (btn) btn.textContent = 'Mở rộng';
+      }
       const ok = await restoreSession();
       if (!ok){
         document.getElementById('authView').classList.remove('hidden');
