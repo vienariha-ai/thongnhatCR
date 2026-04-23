@@ -841,7 +841,7 @@ setLoginStatus(
     function applyRoleUi(){
       const compareSection = document.getElementById('compareSection');
       if (compareSection){
-        compareSection.style.display = isUserRole() ? 'none' : '';
+        compareSection.style.display = '';
       }
 
       const top10Btn = document.getElementById('tabTop10Btn');
@@ -1354,9 +1354,14 @@ setLoginStatus(
             x:{
               ticks:{
                 autoSkip:false,
-                maxRotation: window.innerWidth <= 768 ? 45 : 0,
-                minRotation: 0,
-                font:{ size: window.innerWidth <= 768 ? 10 : 12 }
+                maxRotation:45,
+                minRotation:30,
+                font:{ size:10 },
+                callback:function(value){
+                  const label = this.getLabelForValue(value);
+                  if (!label) return '';
+                  return label.length > 12 ? label.substring(0, 12) + '...' : label;
+                }
               }
             },
             y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
@@ -1373,12 +1378,14 @@ setLoginStatus(
         .sort((a,b)=>b.DistanceKM-a.DistanceKM)
         .slice(0,10);
 
+      const labels = data.map(x => x.FullName || x.UserID || '');
+
       const ctx = document.getElementById('memberChart');
       if (memberChart) memberChart.destroy();
 
       memberChart = new Chart(ctx, {
         data:{
-          labels: data.map(x => x.FullName || x.UserID),
+          labels: labels,
           datasets:[
             {
               type:'bar',
@@ -1412,14 +1419,45 @@ setLoginStatus(
           maintainAspectRatio:false,
           resizeDelay:120,
           interaction:{ mode:'index', intersect:false },
-          plugins:{ legend:{ position:'top', labels:{ boxWidth:14, usePointStyle:true } } },
+          layout:{
+            padding:{ bottom: 20 }
+          },
+          plugins:{
+            legend:{ position:'top', labels:{ boxWidth:14, usePointStyle:true } },
+            tooltip:{
+              callbacks:{
+                title: function(items){
+                  if (!items || !items.length) return '';
+                  const idx = items[0].dataIndex;
+                  return labels[idx] || '';
+                }
+              }
+            }
+          },
           scales:{
             x:{
               ticks:{
                 autoSkip:false,
-                maxRotation: window.innerWidth <= 768 ? 45 : 0,
-                minRotation: 0,
-                font:{ size: window.innerWidth <= 768 ? 10 : 12 }
+                maxRotation: window.innerWidth <= 768 ? 50 : 35,
+                minRotation: window.innerWidth <= 768 ? 35 : 20,
+                font:{ size: window.innerWidth <= 768 ? 10 : 11 },
+                callback: function(value){
+                  const label = this.getLabelForValue(value);
+                  if (!label) return '';
+                  if (window.innerWidth <= 768){
+                    const words = String(label).trim().split(/\s+/);
+                    if (words.length <= 1){
+                      return label.length > 12 ? label.slice(0,12) + '…' : label;
+                    }
+                    const first = words.slice(0, Math.ceil(words.length/2)).join(' ');
+                    const second = words.slice(Math.ceil(words.length/2)).join(' ');
+                    return [
+                      first.length > 14 ? first.slice(0,14) + '…' : first,
+                      second.length > 14 ? second.slice(0,14) + '…' : second
+                    ];
+                  }
+                  return label.length > 16 ? label.slice(0,16) + '…' : label;
+                }
               }
             },
             y:{ beginAtZero:true, position:'left', title:{ display:true, text:'KM' } },
