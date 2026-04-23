@@ -45,7 +45,7 @@
     .login-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
     .login-status{margin-top:10px;font-size:13px;white-space:pre-wrap;line-height:1.6;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.15);padding:10px 12px;border-radius:12px;display:none;color:var(--danger)}
     .app{min-height:100vh;display:grid;grid-template-columns:var(--sidebar) 1fr}
-    .sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:linear-gradient(180deg,#071527 0%, #0d1b2a 100%);color:#fff;padding:20px 18px;border-right:1px solid rgba(255,255,255,.06)}
+    .sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:linear-gradient(180deg,#071527 0%, #0d1b2a 100%);color:#fff;padding:20px 18px;border-right:1px solid rgba(255,255,255,.06);z-index:25}
     .sidebar .brand{display:flex;gap:12px;align-items:center;padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
     .sidebar .brand-text strong{display:block;font-size:18px}
     .sidebar .brand-text span{display:block;color:rgba(255,255,255,.72);font-size:12px;margin-top:2px}
@@ -83,6 +83,12 @@
     .kpi-label{font-size:13px;color:var(--muted);font-weight:700}
     .kpi-value{margin-top:8px;font-size:30px;font-weight:800}
     .kpi-foot{margin-top:8px;font-size:12px;color:var(--muted)}
+    .overview-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .overview-tab-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 16px;border-radius:999px;font-weight:800;cursor:pointer}
+    .overview-tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .overview-panels{display:grid;gap:14px}
+    .overview-panel{display:none}
+    .overview-panel.active{display:block}
     .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
     .grid-1{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px}
     .chart-card{padding:18px}
@@ -117,7 +123,11 @@
     #sectionChartsPrimary .chart-card,#sectionChartsSecondary .chart-card,#sectionDetails{min-width:0}
     #sectionChartsPrimary canvas,#sectionChartsSecondary canvas{max-width:100%}
 
-    .sticky-top-panel{position:sticky;top:12px;z-index:30}
+    .sticky-top-panel{position:sticky;top:12px;z-index:8}
+    .collapsible-summary{display:none;margin-top:8px;gap:8px;flex-wrap:wrap}
+    .collapsible-summary.show{display:flex}
+    .collapsible-summary .quick-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .main > .sticky-top-panel + .sticky-top-panel{top:calc(12px + var(--filter-sticky-height, 0px) + 10px)}
     .collapsible-header-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:8px 12px;border-radius:12px;font-weight:700;cursor:pointer}
     .collapsible-body.is-collapsed{display:none}
     .panel-collapsible .filters-header{margin-bottom:10px}
@@ -137,6 +147,7 @@
       .compare-grid{grid-template-columns:repeat(2,minmax(160px,1fr))}
     }
     @media (max-width:900px){
+      .sticky-top-panel{top:8px}
       .main{padding:18px}
       .page-title{font-size:26px}
       .topbar{align-items:stretch}
@@ -149,6 +160,8 @@
       .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media (max-width:640px){
+      .sticky-top-panel{top:6px}
+      .collapsible-header-btn{width:100%;justify-content:center}
       .auth-shell{padding:14px}
       .login-card{width:100%;border-radius:22px}
       .login-top{padding:20px 18px 14px}
@@ -232,7 +245,7 @@
       </div>
 
       <div class="menu-title">Tổng quan</div>
-      <div class="menu-item active" data-nav-section="dashboard"><span class="menu-dot"></span><span>Dashboard điều hành</span></div>
+      <div class="menu-item active" data-nav-section="dashboard"><span class="menu-dot"></span><span>Tổng quan</span></div>
       <div class="menu-item" data-nav-section="charts"><span class="menu-dot"></span><span>Biểu đồ tháng / tuần</span></div>
       <div class="menu-item" data-nav-section="details"><span class="menu-dot"></span><span>Chi tiết tháng / tuần</span></div>
 
@@ -266,10 +279,11 @@
         <div class="filters-header">
           <div>
             <h2 class="section-title">Bộ lọc dữ liệu</h2>
-            <div class="section-sub">Lọc theo năm, quý, tháng và tuần. Các quyền truy cập khác vẫn được giữ nguyên theo cấu hình hiện tại.</div>
+            <div class="section-sub">Lọc theo năm, quý, tháng và tuần.</div>
           </div>
           <button class="collapsible-header-btn" type="button" id="toggleFilterSectionBtn" onclick="toggleCollapsible('sectionDashboardBody', this)">Thu gọn</button>
         </div>
+        <div id="filterSummary" class="collapsible-summary"></div>
         <div id="sectionDashboardBody" class="collapsible-body">
 
         <div class="filter-grid">
@@ -293,17 +307,37 @@
         </div>
       </section>
 
-      <section id="sectionKpis" class="kpis overview-section" data-overview-section="dashboard">
-        <div class="panel kpi"><div class="kpi-label">Tổng KM đăng ký</div><div class="kpi-value" id="sumReg">0</div><div class="kpi-foot">Tổng chỉ tiêu đã đăng ký</div></div>
-        <div class="panel kpi"><div class="kpi-label">Tổng KM thực tế</div><div class="kpi-value" id="sumDistance">0</div><div class="kpi-foot">Tổng quãng đường đã ghi nhận</div></div>
-        <div class="panel kpi"><div class="kpi-label">Số thành viên tham gia</div><div class="kpi-value" id="sumMembers">0</div><div class="kpi-foot">Số thành viên trong dữ liệu lọc</div></div>
-        <div class="panel kpi"><div class="kpi-label">Số bản ghi</div><div class="kpi-value" id="sumActivities">0</div><div class="kpi-foot">Tổng số dòng dữ liệu</div></div>
-        <div class="panel kpi"><div class="kpi-label">Tỷ lệ hoàn thành</div><div class="kpi-value" id="sumCompletion">0%</div><div class="kpi-foot">KM thực tế / KM đăng ký</div></div>
-        <div class="panel kpi"><div class="kpi-label">Pace trung bình</div><div class="kpi-value" id="sumPace">00:00</div><div class="kpi-foot">Pace trung bình dữ liệu lọc</div></div>
-        <div class="panel kpi"><div class="kpi-label">Tỷ lệ tham gia thực tế</div><div class="kpi-value" id="sumParticipation">0%</div><div class="kpi-foot">Thành viên có KM thực tế ≠ 0</div></div>
-        <div class="panel kpi"><div class="kpi-label">Tích cực > 90%</div><div class="kpi-value" id="sumActive90">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
-        <div class="panel kpi"><div class="kpi-label">Không tích cực < 50%</div><div class="kpi-value" id="sumUnder50">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
-        <div class="panel kpi"><div class="kpi-label">Không tập / Dưỡng sức</div><div class="kpi-value" id="sumNoTrainRest">0 / 0</div><div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div></div>
+      <section id="sectionKpis" class="overview-section" data-overview-section="dashboard">
+        <div class="overview-tabs">
+          <button class="overview-tab-btn active" id="overviewTabGroupBtn" type="button" onclick="switchOverviewTab('group')">Nhóm</button>
+          <button class="overview-tab-btn" id="overviewTabPersonalBtn" type="button" onclick="switchOverviewTab('personal')">Cá nhân</button>
+        </div>
+        <div class="overview-panels">
+          <div class="overview-panel active" id="overviewPanelGroup">
+            <div class="kpis">
+              <div class="panel kpi"><div class="kpi-label">Tổng KM đăng ký</div><div class="kpi-value" id="sumReg">0</div><div class="kpi-foot">Tổng chỉ tiêu đã đăng ký của nhóm</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tổng KM thực tế</div><div class="kpi-value" id="sumDistance">0</div><div class="kpi-foot">Tổng quãng đường đã ghi nhận của nhóm</div></div>
+              <div class="panel kpi"><div class="kpi-label">Số thành viên tham gia</div><div class="kpi-value" id="sumMembers">0</div><div class="kpi-foot">Số thành viên trong dữ liệu lọc</div></div>
+              <div class="panel kpi"><div class="kpi-label">Số bản ghi</div><div class="kpi-value" id="sumActivities">0</div><div class="kpi-foot">Tổng số dòng dữ liệu</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tỷ lệ hoàn thành</div><div class="kpi-value" id="sumCompletion">0%</div><div class="kpi-foot">KM thực tế / KM đăng ký của nhóm</div></div>
+              <div class="panel kpi"><div class="kpi-label">Pace trung bình</div><div class="kpi-value" id="sumPace">00:00</div><div class="kpi-foot">Pace trung bình dữ liệu lọc của nhóm</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tỷ lệ tham gia thực tế</div><div class="kpi-value" id="sumParticipation">0%</div><div class="kpi-foot">Thành viên có KM thực tế ≠ 0</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tích cực > 90%</div><div class="kpi-value" id="sumActive90">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
+              <div class="panel kpi"><div class="kpi-label">Không tích cực < 50%</div><div class="kpi-value" id="sumUnder50">0</div><div class="kpi-foot">Theo số buổi trong kỳ</div></div>
+              <div class="panel kpi"><div class="kpi-label">Không tập / Dưỡng sức</div><div class="kpi-value" id="sumNoTrainRest">0 / 0</div><div class="kpi-foot">KM thực tế = 0 / KM đăng ký = 0</div></div>
+            </div>
+          </div>
+          <div class="overview-panel" id="overviewPanelPersonal">
+            <div class="kpis">
+              <div class="panel kpi"><div class="kpi-label">Tổng KM đăng ký</div><div class="kpi-value" id="personalSumReg">0</div><div class="kpi-foot">Tổng chỉ tiêu đã đăng ký của cá nhân</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tổng KM thực tế</div><div class="kpi-value" id="personalSumDistance">0</div><div class="kpi-foot">Tổng quãng đường đã ghi nhận của cá nhân</div></div>
+              <div class="panel kpi"><div class="kpi-label">Pace trung bình</div><div class="kpi-value" id="personalSumPace">00:00</div><div class="kpi-foot">Pace trung bình dữ liệu cá nhân</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tỷ lệ hoàn thành</div><div class="kpi-value" id="personalSumCompletion">0%</div><div class="kpi-foot">KM thực tế / KM đăng ký của cá nhân</div></div>
+              <div class="panel kpi"><div class="kpi-label">Tỷ lệ tích cực</div><div class="kpi-value" id="personalParticipation">0% (0/0)</div><div class="kpi-foot">Số tuần tập (KM thực tế &gt; 0) / tổng số tuần trong kỳ</div></div>
+              <div class="panel kpi"><div class="kpi-label">Số tuần nghỉ dưỡng sức</div><div class="kpi-value" id="personalRestWeeks">0</div><div class="kpi-foot">Số tuần có KM đăng ký = 0 trong kỳ thống kê</div></div>
+            </div>
+          </div>
+        </div>
       </section>
 
       
@@ -311,10 +345,11 @@
         <div class="filters-header" style="margin-bottom:10px;">
           <div>
             <h2 class="section-title">So sánh người dùng trên biểu đồ</h2>
-            <div class="section-sub">Line KM thực tế của tài khoản đăng nhập được làm nổi bật. Có thể chọn thêm tối đa 3 thành viên để so sánh trên biểu đồ tháng/tuần.</div>
+            <div class="section-sub">Có thể chọn thêm tối đa 3 thành viên để so sánh trên biểu đồ tháng/tuần.</div>
           </div>
           <button class="collapsible-header-btn" type="button" id="toggleCompareSectionBtn" onclick="toggleCollapsible('compareSectionBody', this)">Thu gọn</button>
         </div>
+        <div id="compareSummary" class="collapsible-summary"></div>
         <div id="compareSectionBody" class="collapsible-body">
         <div class="compare-grid">
           <div class="field2">
@@ -470,6 +505,7 @@
     let memberAggAllCache = [];
     let currentUserPersonalRowsCache = [];
     let currentUserActiveRateMapCache = {};
+    let currentOverviewTab = 'group';
 
     function isMobileSidebar(){ return window.innerWidth <= 1100; }
     function openSidebar(){
@@ -634,6 +670,54 @@ setLoginStatus(
       document.getElementById('sessionChip').textContent = 'Phiên: ' + (session ? 'đang hoạt động' : 'chưa đăng nhập');
       document.getElementById('lastSyncChip').textContent = 'Lần tải gần nhất: ' + new Date().toLocaleString('vi-VN');
     }
+
+    function updateStickyPanelOffsets(){
+      const filterSection = document.getElementById('sectionDashboard');
+      const compareSection = document.getElementById('compareSection');
+      const main = document.querySelector('.main');
+      if (!main) return;
+      const filterHeight = filterSection ? Math.ceil(filterSection.getBoundingClientRect().height) : 0;
+      main.style.setProperty('--filter-sticky-height', filterHeight + 'px');
+      if (compareSection && window.innerWidth <= 1100) {
+        compareSection.style.top = 'calc(12px + var(--filter-sticky-height, 0px) + 10px)';
+      } else if (compareSection) {
+        compareSection.style.top = 'calc(12px + var(--filter-sticky-height, 0px) + 10px)';
+      }
+    }
+
+    function updateFilterSummary(){
+      const box = document.getElementById('filterSummary');
+      const body = document.getElementById('sectionDashboardBody');
+      if (!box || !body) return;
+      const parts = [];
+      const y = document.getElementById('yearFilter')?.value || 'Tất cả năm';
+      const q = document.getElementById('quarterFilter')?.value ? ('Quý ' + document.getElementById('quarterFilter').value) : 'Tất cả quý';
+      const m = document.getElementById('monthFilter')?.value ? ('Tháng ' + document.getElementById('monthFilter').value) : 'Tất cả tháng';
+      const w = document.getElementById('weekFilter')?.value ? ('Tuần ' + document.getElementById('weekFilter').value) : 'Tất cả tuần';
+      const kw = (document.getElementById('keywordFilter')?.value || '').trim();
+      parts.push(y, q, m, w);
+      if (kw) parts.push('Từ khóa: ' + kw);
+      box.innerHTML = parts.map(x => `<div class="quick-chip">${escapeHtml(String(x))}</div>`).join('');
+      box.classList.toggle('show', body.classList.contains('is-collapsed'));
+      updateStickyPanelOffsets();
+    }
+
+    function updateCompareSummary(){
+      const box = document.getElementById('compareSummary');
+      const body = document.getElementById('compareSectionBody');
+      if (!box || !body) return;
+      const labels = ['So sánh 1', 'So sánh 2', 'So sánh 3'];
+      const ids = ['compareUser1','compareUser2','compareUser3'];
+      const chosen = ids.map((id, idx) => {
+        const el = document.getElementById(id);
+        const label = el && el.selectedOptions && el.selectedOptions[0] ? el.selectedOptions[0].textContent.trim() : '';
+        return label && label !== 'Không chọn' ? `${labels[idx]}: ${label}` : '';
+      }).filter(Boolean);
+      if (!chosen.length) chosen.push('Chưa chọn người dùng để so sánh');
+      box.innerHTML = chosen.map(x => `<div class="quick-chip">${escapeHtml(String(x))}</div>`).join('');
+      box.classList.toggle('show', body.classList.contains('is-collapsed'));
+      updateStickyPanelOffsets();
+    }
     function populateCompareSelectors(){
       const ids = ['compareUser1','compareUser2','compareUser3'];
       const users = (allUsersDirectory || []).filter(u => String(u.UserID || '') !== String((currentUser && currentUser.UserID) || ''));
@@ -660,10 +744,12 @@ setLoginStatus(
         if ([...el.options].some(o => o.value === current)) el.value = current;
         el.onchange = function(){
           compareUsers[idx] = this.value || '';
+          updateCompareSummary();
           renderMonthComboChart(chartRowsCache);
           renderWeekComboChart(chartRowsCache);
         };
       });
+      updateCompareSummary();
     }
 
     function getSelectedCompareUsers(){
@@ -819,6 +905,9 @@ setLoginStatus(
         bindEvents();
         showOverviewSection('dashboard');
         updateUxMeta();
+        updateFilterSummary();
+        updateCompareSummary();
+        updateStickyPanelOffsets();
         setBanner('Đã kết nối thành công với hệ thống dữ liệu.', 'info');
       }catch(err){
         console.error('INIT APP ERROR:', err);
@@ -835,6 +924,7 @@ setLoginStatus(
       document.getElementById('keywordFilter').addEventListener('keydown', function(e){
         if (e.key === 'Enter') loadDashboard();
       });
+      document.getElementById('keywordFilter').addEventListener('input', updateFilterSummary);
       document.getElementById('loginPassword').addEventListener('keydown', function(e){
         if (e.key === 'Enter') login();
       });
@@ -846,6 +936,7 @@ setLoginStatus(
       });
       window.addEventListener('resize', function(){
         if (!isMobileSidebar()) closeSidebar();
+        updateStickyPanelOffsets();
       });
       document.querySelectorAll('.menu-item[data-nav-section]').forEach(function(item){
         item.addEventListener('click', function(){
@@ -872,11 +963,16 @@ setLoginStatus(
     function showOverviewSection(sectionKey){
       const target = String(sectionKey || 'dashboard');
       document.querySelectorAll('[data-overview-section]').forEach(el => {
+        if (el.id === 'sectionDashboard') {
+          el.classList.remove('is-hidden');
+          return;
+        }
         el.classList.toggle('is-hidden', el.getAttribute('data-overview-section') !== target);
       });
       document.querySelectorAll('.menu-item[data-nav-section]').forEach(el => {
         el.classList.toggle('active', el.getAttribute('data-nav-section') === target);
       });
+      updateStickyPanelOffsets();
       if (isMobileSidebar()) closeSidebar();
     }
 
@@ -907,7 +1003,10 @@ setLoginStatus(
       if (!body) return;
       body.classList.toggle('is-collapsed');
       if (btnEl) btnEl.textContent = body.classList.contains('is-collapsed') ? 'Mở rộng' : 'Thu gọn';
+      if (bodyId === 'sectionDashboardBody') updateFilterSummary();
+      if (bodyId === 'compareSectionBody') updateCompareSummary();
       setTimeout(() => {
+        updateStickyPanelOffsets();
         if (monthComboChart) monthComboChart.resize();
         if (memberChart) memberChart.resize();
         if (weekComboChart) weekComboChart.resize();
@@ -928,12 +1027,28 @@ setLoginStatus(
     }
 
     function buildRankMap(items){
-      const map = {};
+      const totals = {};
       (items || []).forEach((item, idx) => {
         const key = String(item.UserID || item.FullName || idx);
-        if (!(key in map)) map[key] = idx + 1;
+        if (!totals[key]) {
+          totals[key] = { key, distance: 0, fallbackIndex: idx };
+        }
+        totals[key].distance += Number(item.DistanceKM || 0);
       });
-      return map;
+      const ordered = Object.values(totals).sort((a,b) => {
+        if (b.distance !== a.distance) return b.distance - a.distance;
+        return a.fallbackIndex - b.fallbackIndex;
+      });
+      const rankMap = {};
+      let prevDistance = null;
+      let prevRank = 0;
+      ordered.forEach((item, idx) => {
+        const rank = (prevDistance !== null && item.distance === prevDistance) ? prevRank : (idx + 1);
+        rankMap[item.key] = rank;
+        prevDistance = item.distance;
+        prevRank = rank;
+      });
+      return rankMap;
     }
 
     function applyRoleUi(){
@@ -1034,6 +1149,7 @@ setLoginStatus(
       if (y) document.getElementById('yearFilter').value = String(y);
       if (q) document.getElementById('quarterFilter').value = String(q);
       if (m) document.getElementById('monthFilter').value = String(m);
+      updateFilterSummary();
     }
 
     function currentFilters(){
@@ -1081,6 +1197,9 @@ setLoginStatus(
 
         document.getElementById('detailMeta').textContent = `Hiển thị ${formatNumber((detailRowsCache || []).length)} bản ghi phù hợp bộ lọc hiện tại.`;
         updateUxMeta();
+        updateFilterSummary();
+        updateCompareSummary();
+        updateStickyPanelOffsets();
         setStatus('Đã tải dữ liệu thành công', 'ok');
         setBanner('Dữ liệu đã được cập nhật thành công.', 'info');
       }catch(err){
@@ -1367,21 +1486,80 @@ setLoginStatus(
       });
     }
 
+    function getCurrentUserFilteredRows(){
+      const currentId = String((currentUser && currentUser.UserID) || '').trim();
+      return (detailRowsAllMembersCache || []).filter(r => String(r.UserID || '').trim() === currentId);
+    }
+
+    function buildPersonalOverviewStats(rows){
+      const safeRows = rows || [];
+      const totalReg = safeRows.reduce((s,r)=>s + Number(r.KMReg || 0), 0);
+      const totalDistance = safeRows.reduce((s,r)=>s + Number(r.DistanceKM || 0), 0);
+      const paceRows = safeRows.map(getPaceMinutesFromRow).filter(x => x > 0);
+      const avgPace = paceRows.length ? (paceRows.reduce((s,x)=>s+x,0) / paceRows.length) : 0;
+      const weekMap = {};
+      safeRows.forEach(r => {
+        const weekNum = Number(r.WeekNum || 0);
+        if (!weekNum) return;
+        if (!weekMap[weekNum]) weekMap[weekNum] = { distance: 0, reg: 0 };
+        weekMap[weekNum].distance += Number(r.DistanceKM || 0);
+        weekMap[weekNum].reg += Number(r.KMReg || 0);
+      });
+      const weeks = Object.values(weekMap);
+      const totalWeeks = weeks.length;
+      const activeWeeks = weeks.filter(w => Number(w.distance || 0) > 0).length;
+      const restWeeks = weeks.filter(w => Number(w.reg || 0) === 0).length;
+      const participationRate = totalWeeks ? +((activeWeeks / totalWeeks) * 100).toFixed(2) : 0;
+      const completionRate = totalReg > 0 ? +((totalDistance / totalReg) * 100).toFixed(2) : 0;
+      return { totalReg, totalDistance, avgPace, participationRate, activeWeeks, totalWeeks, restWeeks, completionRate };
+    }
+
+    function renderPersonalSummary(){
+      const stats = buildPersonalOverviewStats(getCurrentUserFilteredRows());
+      document.getElementById('personalSumReg').textContent = formatNumber(stats.totalReg);
+      document.getElementById('personalSumDistance').textContent = formatNumber(stats.totalDistance);
+      document.getElementById('personalSumPace').textContent = stats.avgPace > 0 ? minuteToPaceText(stats.avgPace) : '00:00';
+      document.getElementById('personalSumCompletion').textContent = formatNumber(stats.completionRate) + '%';
+      document.getElementById('personalParticipation').textContent = `${formatNumber(stats.participationRate)}% (${formatNumber(stats.activeWeeks)}/${formatNumber(stats.totalWeeks)})`;
+      document.getElementById('personalRestWeeks').textContent = formatNumber(stats.restWeeks);
+    }
+
+    function switchOverviewTab(tab){
+      currentOverviewTab = tab === 'personal' ? 'personal' : 'group';
+      const groupBtn = document.getElementById('overviewTabGroupBtn');
+      const personalBtn = document.getElementById('overviewTabPersonalBtn');
+      const groupPanel = document.getElementById('overviewPanelGroup');
+      const personalPanel = document.getElementById('overviewPanelPersonal');
+      if (groupBtn) groupBtn.classList.toggle('active', currentOverviewTab === 'group');
+      if (personalBtn) personalBtn.classList.toggle('active', currentOverviewTab === 'personal');
+      if (groupPanel) groupPanel.classList.toggle('active', currentOverviewTab === 'group');
+      if (personalPanel) personalPanel.classList.toggle('active', currentOverviewTab === 'personal');
+    }
+
     function renderSummary(s, rows){
-      document.getElementById('sumReg').textContent = formatNumber(s.totalReg || 0);
-      document.getElementById('sumDistance').textContent = formatNumber(s.totalDistance || 0);
-      document.getElementById('sumMembers').textContent = formatNumber(s.totalMembers || 0);
-      document.getElementById('sumActivities').textContent = formatNumber(s.totalActivities || 0);
-      document.getElementById('sumCompletion').textContent = formatNumber(s.completionRate || 0) + '%';
-      const paceRows = (rows || []).map(getPaceMinutesFromRow).filter(x => x > 0);
+      const groupRows = (detailRowsAllMembersCache && detailRowsAllMembersCache.length) ? detailRowsAllMembersCache : (rows || []);
+      const memberAggGroup = buildMemberAggregates(groupRows);
+      const totalReg = groupRows.reduce((sum, r) => sum + Number(r.KMReg || 0), 0);
+      const totalDistance = groupRows.reduce((sum, r) => sum + Number(r.DistanceKM || 0), 0);
+      const totalMembers = memberAggGroup.length;
+      const totalActivities = groupRows.length;
+      const completionRate = totalReg > 0 ? +((totalDistance / totalReg) * 100).toFixed(2) : 0;
+      document.getElementById('sumReg').textContent = formatNumber(totalReg);
+      document.getElementById('sumDistance').textContent = formatNumber(totalDistance);
+      document.getElementById('sumMembers').textContent = formatNumber(totalMembers);
+      document.getElementById('sumActivities').textContent = formatNumber(totalActivities);
+      document.getElementById('sumCompletion').textContent = formatNumber(completionRate) + '%';
+      const paceRows = groupRows.map(getPaceMinutesFromRow).filter(x => x > 0);
       const avgPace = paceRows.length ? (paceRows.reduce((sum, x) => sum + x, 0) / paceRows.length) : 0;
       document.getElementById('sumPace').textContent = avgPace > 0 ? minuteToPaceText(avgPace) : '00:00';
 
-      const stats = buildParticipationStats(rows || []);
+      const stats = buildParticipationStats(groupRows);
       document.getElementById('sumParticipation').textContent = formatNumber(stats.participationRate) + '%';
       document.getElementById('sumActive90').textContent = formatNumber(stats.active90Count);
       document.getElementById('sumUnder50').textContent = formatNumber(stats.under50Count);
       document.getElementById('sumNoTrainRest').textContent = `${formatNumber(stats.noTrainingCount)} / ${formatNumber(stats.restCount)}`;
+      renderPersonalSummary();
+      switchOverviewTab(currentOverviewTab);
     }
 
     function renderMonthComboChart(rows){
